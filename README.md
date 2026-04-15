@@ -4,9 +4,9 @@ Welcome to the official hackathon repository by [GDG,UCE-OU].
 This repository serves as the starting point for all participating teams.
 
 
-## 👥 Team Details
+## Team Details
 
-> ⚠️ After forking, fill in your team details below in your fork's README
+After forking, fill in your team details below in your fork's README
 
 - **Team Name:**
 - **Team Lead:**
@@ -19,7 +19,7 @@ This repository serves as the starting point for all participating teams.
 ---
 
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Step 1 — Fork this Repository
 - Click the **Fork** button at the top right of this page
@@ -44,13 +44,13 @@ git push origin main
 
 ---
 
-## 📝 Problem Statement
+## Problem Statement
 
 [Write your problem statement here]
 
 ---
 
-## 📦 Submission Guidelines
+## Submission Guidelines
 
 - All code must be pushed to your **forked repository**
 - Your repository must be **public**
@@ -67,12 +67,11 @@ git push origin main
 - The decision of the judges will be final
 
 ---
-
-## 📞 Contact
+## Contact
 
 For any queries, reach out to us at:
 - **phone number** : [7981972900]
 
 ---
 
-> Good luck to all participating teams! 🎯
+> Good luck to all participating teams! 
