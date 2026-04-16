@@ -1,12 +1,9 @@
 # Hackathon — [DEV ARENA]
 
-Welcome to the official hackathon repository by [GDG,UCE-OU].
-This repository serves as the starting point for all participating teams.
-Title of your repository shall be : team-DevBandits
+- Taken from the official hackathon repository by [GDG,UCE-OU], which serves as the starting point for all participating teams.
+- Title of your repository: team-DevBandits
 
-## Team Details
-
-After forking, fill in your team details below in your fork's README
+## 👥 Team Details
 
 - **Team Name:** DevBandits
 - **Team Lead:** Abdur Rahman Qasim
@@ -19,7 +16,7 @@ After forking, fill in your team details below in your fork's README
 ---
 
 
-## Getting Started
+## Getting Started (Development)
 
 ### Step 1 — Fork this Repository
 - Click the **Fork** button at the top right of this page
@@ -42,19 +39,14 @@ git commit -m "Your commit message"
 git push origin main
 ```
 
+### Step 4 — Run & Test project locally.
+Check instructions to run project locally.
+
 ---
 
-## Problem Statement
+## 🎯 Problem Statement
 
 [Write your problem statement here]
-
----
-
-## Submission Guidelines
-
-- All code must be pushed to your **forked repository**
-- Your repository must be **public**
-- **Submission Deadline:** [17th april 3:59pm]
 
 ---
 
@@ -65,12 +57,20 @@ git push origin main
 - Plagiarism will lead to immediate disqualification
 - The decision of the judges will be final
 
+### Submission Guidelines
+- All code must be pushed to your **forked repository**
+- Your repository must be **public**
+- **Submission Deadline:** [17th april 3:59pm]
+
 ---
+
 ## Contact
 
 For any queries, reach out to us at:
 - **contact number** : [7981972900]
 
 ---
+
+## ✍️ Endnote
 
 > Good luck to all participating teams! 
