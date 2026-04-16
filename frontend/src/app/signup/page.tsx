@@ -52,7 +52,7 @@ export default function SignupPage() {
       if (data.success) {
         localStorage.setItem("student_id", data.user.id);
         localStorage.setItem("student_token", data.token);
-        router.push("/dashboard");
+        router.push("/user/dashboard");
       } else {
         setError(data.message);
       }

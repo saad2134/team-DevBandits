@@ -71,7 +71,7 @@ export default function EditProfilePage() {
         body: JSON.stringify(payload),
       });
 
-      router.push("/dashboard");
+      router.push("/user/dashboard");
     } catch (error) {
       console.error("Failed to update profile:", error);
     } finally {
@@ -80,7 +80,7 @@ export default function EditProfilePage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background py-10">
+    <div className="p-6 md:p-8">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Edit Profile</CardTitle>
@@ -139,7 +139,7 @@ export default function EditProfilePage() {
               <Button type="submit" disabled={saving}>
                 {saving ? "Saving..." : "Save Changes"}
               </Button>
-              <Button type="button" variant="outline" onClick={() => router.push("/dashboard")}>
+              <Button type="button" variant="outline" onClick={() => router.push("/user/dashboard")}>
                 Cancel
               </Button>
             </div>
