@@ -90,15 +90,15 @@ export default function DashboardPage() {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "internship":
-        return <Briefcase className="h-4 w-4" />;
+        return <Briefcase className="h-6 w-6" />;
       case "scholarship":
-        return <Award className="h-4 w-4" />;
+        return <Award className="h-6 w-6" />;
       case "research":
-        return <Search className="h-4 w-4" />;
+        return <Search className="h-6 w-6" />;
       case "job":
-        return <Briefcase className="h-4 w-4" />;
+        return <Briefcase className="h-6 w-6" />;
       default:
-        return <GraduationCap className="h-4 w-4" />;
+        return <GraduationCap className="h-6 w-6" />;
     }
   };
 
@@ -116,10 +116,10 @@ export default function DashboardPage() {
   return (
     <div className="p-6 md:p-8 space-y-8">
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="col-span-1 md:col-span-2 bg-gradient-to-r from-primary to-secondary p-8 rounded-2xl text-primary-foreground shadow-xl flex flex-col justify-between relative overflow-hidden min-h-[220px]">
+        <div className="col-span-1 md:col-span-2 bg-gradient-to-r from-primary/80 to-secondary p-8 rounded-2xl text-primary-foreground shadow-xl flex flex-col justify-between relative overflow-hidden min-h-[220px]">
           <div className="relative z-10">
             <h2 className="text-3xl font-extrabold tracking-tighter mb-2">Welcome back, {profile?.name || 'User'}</h2>
-            <p className="text-primary-foreground/80 max-w-md">Your AI scout found {opportunities.length} new opportunities tailored to your profile.</p>
+            <p className="text-primary-foreground/80 max-w-md">Your scout agent found {opportunities.length} new opportunities tailored to your profile.</p>
           </div>
           <div className="relative z-10 flex gap-4 mt-6">
             <Button className="bg-primary-foreground text-primary px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg hover:scale-105 transition-transform">
@@ -136,13 +136,13 @@ export default function DashboardPage() {
         <div className="bg-muted rounded-2xl p-6 border border-border flex flex-col">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-2 h-2 bg-secondary rounded-full animate-pulse"></div>
-            <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Live AI Activity</span>
+            <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Live Agent Activity</span>
           </div>
           <div className="space-y-4 flex-grow">
             <div className="flex gap-3">
               <Search className="text-primary h-5 w-5" />
               <div>
-                <p className="text-xs font-semibold text-foreground">AI Scout scanning platforms...</p>
+                <p className="text-xs font-semibold text-foreground">Scout Agent scanning platforms...</p>
                 <p className="text-[10px] text-muted-foreground">2 minutes ago</p>
               </div>
             </div>
@@ -217,7 +217,7 @@ export default function DashboardPage() {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {opportunities.slice(0, 3).map((result) => (
-            <Card key={result.opportunity.id} className="bg-card rounded-2xl p-6 shadow-sm border border-transparent hover:border-primary/20 transition-all flex flex-col group">
+            <Card key={result.opportunity.id} className="bg-card rounded-2xl p-6 shadow-sm border border-foreground/10 hover:border-primary/20 transition-all flex flex-col group">
               <div className="flex justify-between items-start mb-6">
                 <div className="w-14 h-14 bg-muted rounded-xl flex items-center justify-center border border-border">
                   {getTypeIcon(result.opportunity.type)}
@@ -240,7 +240,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <Button 
-                className="mt-auto w-full py-3 bg-muted hover:bg-primary hover:text-primary-foreground rounded-xl text-sm font-bold transition-all"
+                className="mt-auto w-full py-3 bg-muted text-foreground hover:bg-primary hover:text-primary-foreground rounded-xl text-sm font-bold transition-all"
                 onClick={() => handleEngage(result.opportunity.id, "viewed")}
               >
                 View Details
