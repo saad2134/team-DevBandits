@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Opportunity Details | CareerPilot AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#e2dfff",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "surface-variant": "#e0e3e5",
+                        "on-background": "#191c1e",
+                        "tertiary-container": "#a44100",
+                        "outline": "#777587",
+                        "on-secondary-container": "#fffbff",
+                        "primary": "#3525cd",
+                        "inverse-primary": "#c3c0ff",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-tertiary-container": "#ffd2be",
+                        "background": "#f7f9fb",
+                        "surface-container": "#eceef0",
+                        "on-secondary-fixed": "#2c0051",
+                        "tertiary": "#7e3000",
+                        "on-surface": "#191c1e",
+                        "inverse-surface": "#2d3133",
+                        "on-surface-variant": "#464555",
+                        "on-primary-container": "#dad7ff",
+                        "on-tertiary-fixed-variant": "#7b2f00",
+                        "on-secondary-fixed-variant": "#6900b3",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-tint": "#4d44e3",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#9c48ea",
+                        "primary-container": "#4f46e5",
+                        "on-primary-fixed": "#0f0069",
+                        "secondary": "#8127cf",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-bright": "#f7f9fb",
+                        "tertiary-fixed": "#ffdbcc",
+                        "on-tertiary-fixed": "#351000",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "surface": "#f7f9fb",
+                        "secondary-fixed-dim": "#ddb7ff",
+                        "secondary-fixed": "#f0dbff",
+                        "surface-dim": "#d8dadc",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#c7c4d8",
+                        "surface-container-low": "#f2f4f6",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .display-text { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen">
+<!-- SideNavBar (Shared Component) -->
+<aside class="h-screen w-64 fixed left-0 top-0 overflow-y-auto bg-slate-50 dark:bg-slate-900 border-r border-slate-200/50 dark:border-slate-800/50 flex flex-col gap-2 p-4 z-40 hidden md:flex">
+<div class="flex flex-col gap-1 mb-6 px-2">
+<h1 class="text-lg font-black text-slate-900 dark:text-white tracking-tighter">CareerPilot AI</h1>
+<p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">The Intelligent Path</p>
+</div>
+<nav class="flex-grow flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out hover:translate-x-1 font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg transition-all duration-200 ease-in-out hover:translate-x-1 font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined">explore</span> Explore
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out hover:translate-x-1 font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined">bookmark</span> Saved
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out hover:translate-x-1 font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined">assignment</span> Applications
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out hover:translate-x-1 font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined">analytics</span> Insights
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out hover:translate-x-1 font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined">psychology</span> AI Assistant
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out hover:translate-x-1 font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined">person</span> Profile
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out hover:translate-x-1 font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined">settings</span> Settings
+            </a>
+</nav>
+<div class="mt-auto p-2">
+<button class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity">
+                Upgrade to Pro
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-64 min-h-screen">
+<!-- Header Actions Area -->
+<header class="flex items-center justify-between px-8 py-6 sticky top-0 z-30 glass-panel border-b border-outline-variant/10">
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors font-medium text-sm">
+<span class="material-symbols-outlined">arrow_back</span> Back to Explorer
+                </button>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 border border-outline-variant/30 rounded-xl text-sm font-semibold hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[20px]">bookmark</span> Save Opportunity
+                </button>
+<button class="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-primary to-secondary text-on-primary rounded-xl text-sm font-bold shadow-xl shadow-primary/10 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[20px]">auto_awesome</span> Apply with AI
+                </button>
+</div>
+</header>
+<div class="max-w-7xl mx-auto p-8 grid grid-cols-1 lg:grid-cols-12 gap-10">
+<!-- Left Column: Description & Details -->
+<div class="lg:col-span-8 flex flex-col gap-10">
+<!-- Hero Info Section -->
+<section class="flex flex-col gap-6">
+<div class="flex items-start gap-6">
+<img alt="Company Logo" class="w-20 h-20 rounded-2xl object-cover shadow-sm bg-surface-container" data-alt="modern minimalist tech company logo on a clean white background with geometric indigo patterns" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCJvK2OYb3mV7tRG4Oe94duIRCHsP4Ho6MlzGWt5DzzDGVUgM8fQIM3QtxRfrXkW0jr75J_h9DgXryFKfD9g372nXgNvNYFmodeaBOY6rV7K2GGLNzmYG7QmKh3OtwgYbTpMPcDrxgApohUFLo_kGNV9mMY0UuvDlH5lhSTPWZnHKOEwtmS5Oq9kLO4JcUomV4-SzcvLwsW5803lsv222WGzlACn3GxG23voeOcBST33b_YRoPz-fCqe6DZfn6iAvrEW5TsTdumcS2"/>
+<div class="flex flex-col gap-1">
+<span class="text-xs font-bold uppercase tracking-widest text-primary">Full-time • Remote</span>
+<h2 class="text-4xl font-extrabold tracking-tight text-on-surface">Senior Product Strategist</h2>
+<p class="text-lg text-on-surface-variant font-medium">Luminary Digital Systems</p>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-surface-container-low rounded-2xl">
+<div class="flex flex-col gap-1">
+<span class="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest">Salary Range</span>
+<p class="font-bold text-on-surface">$140k – $185k</p>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest">Experience</span>
+<p class="font-bold text-on-surface">5+ Years</p>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest">Posted</span>
+<p class="font-bold text-on-surface">2 days ago</p>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest">Location</span>
+<p class="font-bold text-on-surface">San Francisco, CA</p>
+</div>
+</div>
+</section>
+<!-- Full Description Section -->
+<section class="flex flex-col gap-4">
+<h3 class="text-xl font-bold tracking-tight border-l-4 border-primary pl-4">About the Role</h3>
+<div class="text-on-surface-variant leading-relaxed flex flex-col gap-4 font-body">
+<p>Luminary Digital is seeking a visionary Senior Product Strategist to join our AI Innovation Lab. You will be responsible for bridging the gap between cutting-edge technological capabilities and human-centric product design. Our goal is to redefine how professional services interact with generative intelligence.</p>
+<p>In this role, you'll work closely with engineering and design leads to map out the next 24 months of our platform evolution. We are looking for someone who doesn't just manage roadmaps, but challenges the status quo of user experience in complex data environments.</p>
+</div>
+</section>
+<section class="flex flex-col gap-4">
+<h3 class="text-xl font-bold tracking-tight border-l-4 border-primary pl-4">Key Requirements</h3>
+<ul class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+<li class="flex items-start gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">check_circle</span>
+<span>Proven track record of launching AI-integrated B2B products.</span>
+</li>
+<li class="flex items-start gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">check_circle</span>
+<span>Deep understanding of LLM application frameworks.</span>
+</li>
+<li class="flex items-start gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">check_circle</span>
+<span>Expertise in qualitative user research and data synthesis.</span>
+</li>
+<li class="flex items-start gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">check_circle</span>
+<span>Ability to articulate complex technical concepts to stakeholders.</span>
+</li>
+</ul>
+</section>
+<!-- Skill Gap Bento Grid -->
+<section class="flex flex-col gap-6">
+<div class="flex items-end justify-between">
+<h3 class="text-xl font-bold tracking-tight border-l-4 border-primary pl-4">Path to Mastery</h3>
+<span class="text-xs font-bold uppercase tracking-widest text-primary-container bg-primary/10 px-3 py-1 rounded-full">Recommended by AI</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="p-6 bg-surface-container-low rounded-2xl border border-primary/5 hover:border-primary/20 transition-colors flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">school</span>
+</div>
+<h4 class="font-bold text-on-surface">Advanced LLM Architecture</h4>
+</div>
+<p class="text-sm text-on-surface-variant leading-snug">This 4-week intensive course will bridge your current knowledge gap in model fine-tuning.</p>
+<a class="mt-2 text-xs font-bold text-primary flex items-center gap-1 hover:underline" href="#">VIEW COURSE <span class="material-symbols-outlined text-xs">arrow_forward</span></a>
+</div>
+<div class="p-6 bg-surface-container-low rounded-2xl border border-primary/5 hover:border-primary/20 transition-colors flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-secondary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary">terminal</span>
+</div>
+<h4 class="font-bold text-on-surface">Python for Product Managers</h4>
+</div>
+<p class="text-sm text-on-surface-variant leading-snug">Gain the technical literacy needed to collaborate effectively with Luminary's engineering team.</p>
+<a class="mt-2 text-xs font-bold text-secondary flex items-center gap-1 hover:underline" href="#">VIEW RESOURCE <span class="material-symbols-outlined text-xs">arrow_forward</span></a>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Match Sidebar -->
+<aside class="lg:col-span-4 flex flex-col gap-8">
+<!-- Match Score Card -->
+<div class="p-8 bg-surface-container-lowest rounded-3xl border border-outline-variant/10 shadow-2xl shadow-slate-200/40 relative overflow-hidden">
+<div class="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-3xl"></div>
+<div class="relative z-10 flex flex-col items-center text-center gap-4">
+<div class="relative w-32 h-32 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-surface-container-high" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-primary" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" stroke-dasharray="364.4" stroke-dashoffset="54.6" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-3xl font-black text-on-surface">85%</span>
+<span class="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest">Match</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<h4 class="text-lg font-bold text-on-surface">Strong Candidate</h4>
+<p class="text-sm text-on-surface-variant leading-snug">Your background in SaaS strategy makes you a top 10% applicant for this role.</p>
+</div>
+</div>
+<div class="mt-8 flex flex-col gap-6">
+<!-- Matching Skills -->
+<div class="flex flex-col gap-3">
+<span class="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Strongest Alignments</span>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1.5 bg-primary/5 text-primary text-xs font-bold rounded-lg border border-primary/10">SaaS Strategy</span>
+<span class="px-3 py-1.5 bg-primary/5 text-primary text-xs font-bold rounded-lg border border-primary/10">User Research</span>
+<span class="px-3 py-1.5 bg-primary/5 text-primary text-xs font-bold rounded-lg border border-primary/10">Roadmap Mgmt</span>
+</div>
+</div>
+<!-- Missing Skills -->
+<div class="flex flex-col gap-3">
+<span class="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Growth Opportunities</span>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1.5 bg-tertiary-fixed/30 text-on-tertiary-fixed-variant text-xs font-bold rounded-lg border border-tertiary-fixed">Python (API)</span>
+<span class="px-3 py-1.5 bg-tertiary-fixed/30 text-on-tertiary-fixed-variant text-xs font-bold rounded-lg border border-tertiary-fixed">LLM Ops</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Organization Info -->
+<div class="p-6 bg-surface-container-low rounded-2xl flex flex-col gap-4">
+<h4 class="text-sm font-bold text-on-surface uppercase tracking-widest">The Organization</h4>
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 bg-white rounded-xl shadow-sm overflow-hidden p-2 flex items-center justify-center">
+<img alt="Luminary Systems" class="w-full h-full object-contain" data-alt="abstract tech brand emblem with minimalist geometric lines and soft indigo gradients" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqHag5NQuxwcIrLVbMvdBegxRpycrUVDAxz4AsVG--_MMfGnZEBLWk2lgRbE5DnB8hA4xLEV0Rly8qrytIPwyj-9kI8F1q8hvECT1x-ZxT8Yxf-Mq8Y4kBnycUYMmIj6bgMuchwosc7IGlYY3qDVO2V5hxyC_Svy2ogTp6ymVpphUJPcGGUXEWeGS5qTRZCM5qDdMt6f6Yyz75U4xQTYMPYxHmu5Q_eTarUMsSHg2N8nLLGHIReWDvT0k3pWbydRvBaOEv7-SxUCsP"/>
+</div>
+<div>
+<p class="font-bold text-on-surface text-sm">Luminary Digital</p>
+<p class="text-xs text-on-surface-variant">500-1000 Employees • Series C</p>
+</div>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed italic">"Pioneering the future of collaborative intelligence for the modern workforce."</p>
+<button class="text-xs font-bold text-primary flex items-center gap-1 hover:underline">LEARN MORE <span class="material-symbols-outlined text-xs">open_in_new</span></button>
+</div>
+<!-- Action CTA -->
+<div class="p-6 bg-primary text-on-primary rounded-3xl flex flex-col gap-4 shadow-xl shadow-primary/20">
+<h4 class="font-bold text-lg">Ready to accelerate?</h4>
+<p class="text-sm opacity-80 leading-snug">Let our AI tailor your portfolio and cover letter specifically for Luminary Digital's culture.</p>
+<button class="w-full py-3 bg-white text-primary rounded-xl font-black text-sm hover:scale-[1.02] transition-transform">
+                        Launch AI Application Kit
+                    </button>
+</div>
+</aside>
+</div>
+<!-- Footer (Shared Component) -->
+<footer class="w-full py-12 px-8 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-900 mt-20">
+<div class="flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto gap-8">
+<p class="font-sans text-xs uppercase tracking-widest text-slate-500">© 2024 CareerPilot AI. All rights reserved.</p>
+<div class="flex gap-8">
+<a class="font-sans text-xs uppercase tracking-widest text-slate-400 hover:text-indigo-500 transition-colors underline underline-offset-4" href="#">Privacy Policy</a>
+<a class="font-sans text-xs uppercase tracking-widest text-slate-400 hover:text-indigo-500 transition-colors underline underline-offset-4" href="#">Terms of Service</a>
+<a class="font-sans text-xs uppercase tracking-widest text-slate-400 hover:text-indigo-500 transition-colors underline underline-offset-4" href="#">Help Center</a>
+<a class="font-sans text-xs uppercase tracking-widest text-slate-400 hover:text-indigo-500 transition-colors underline underline-offset-4" href="#">Contact</a>
+</div>
+</div>
+</footer>
+</main>
+<!-- BottomNavBar for Mobile (Shared Component Logic) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-outline-variant/10 px-4 py-3 flex justify-between items-center z-50">
+<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold">Dash</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">explore</span>
+<span class="text-[10px] font-bold">Explore</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined">psychology</span>
+<span class="text-[10px] font-bold">AI</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold">Profile</span>
+</a>
+</nav>
+</body></html>
