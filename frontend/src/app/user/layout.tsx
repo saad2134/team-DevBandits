@@ -104,19 +104,32 @@ function UserSidebar({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { setTheme, theme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
+  const [profile, setProfile] = React.useState<StudentProfile | null>(null);
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
 
-  const studentId = typeof window !== "undefined" ? localStorage.getItem("student_id") : null;
+  React.useEffect(() => {
+    const studentId = localStorage.getItem("student_id");
+    if (studentId) {
+      fetch(`${API_URL}/profile/${studentId}`)
+        .then(res => res.json())
+        .then(data => setProfile(data))
+        .catch(console.error);
+    }
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("student_id");
     router.push("/login");
   };
 
-  const initials = "U";
+  const getInitials = (name: string) => {
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  };
+
+  const initials = profile?.name ? getInitials(profile.name) : "U";
 
   return (
     <SidebarProvider defaultOpen={true} className="h-screen">
@@ -177,8 +190,8 @@ function UserSidebar({ children }: { children: React.ReactNode }) {
                   {initials}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">Profile</p>
-                  <p className="text-xs text-muted-foreground">Edit</p>
+                  <p className="text-sm font-medium truncate">{profile?.name || "Profile"}</p>
+                  <p className="text-xs text-muted-foreground">Profile</p>
                 </div>
               </Link>
               <Link
