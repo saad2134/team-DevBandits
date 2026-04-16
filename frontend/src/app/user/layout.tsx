@@ -19,6 +19,7 @@ import {
   Sparkles,
   GraduationCap,
   FileEdit,
+  Target,
 } from "lucide-react";
 import Image from "next/image";
 import {
@@ -50,6 +51,14 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { siteConfig } from "@/config/site";
+import { API_URL } from "@/lib/utils";
+
+interface StudentProfile {
+  name: string;
+  email: string;
+  branch?: string;
+  year?: number;
+}
 
 const appNavItems = [
   {
@@ -61,9 +70,10 @@ const appNavItems = [
   {
     title: "Oppurtunities",
     items: [
-      { title: "Explore", url: "/user/explore", icon: Compass },
+      { title: "Matched", url: "/user/matched", icon: Target },
       { title: "Saved", url: "/user/saved", icon: Bookmark },
       { title: "Applications", url: "/user/applications", icon: FileText },
+      { title: "Explore", url: "/user/explore", icon: Compass },
     ],
   },
   {

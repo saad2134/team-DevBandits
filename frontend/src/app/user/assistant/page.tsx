@@ -18,7 +18,11 @@ import {
   Target,
   MessageSquare,
   Copy,
-  Check
+  Check,
+  RefreshCw,
+  ThumbsUp,
+  ThumbsDown,
+  Volume2
 } from "lucide-react";
 
 interface Message {
@@ -50,6 +54,9 @@ export default function AIAssistantPage() {
       suggestions: ["Find opportunities", "Resume tips", "Career advice", "Interview prep"]
     }
   ]);
+  const [likedMessages, setLikedMessages] = useState<Set<number>>(new Set());
+  const [dislikedMessages, setDislikedMessages] = useState<Set<number>>(new Set());
+  const [speakingId, setSpeakingId] = useState<number | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -62,6 +69,42 @@ export default function AIAssistantPage() {
   useEffect(() => {
     document.title = "AI Assistant | CareerCompass";
   }, []);
+
+  const handleLike = (id: number) => {
+    setLikedMessages(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.delete(id);
+        setDislikedMessages(d => {
+          const dSet = new Set(d);
+          dSet.delete(id);
+          return dSet;
+        });
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const handleDislike = (id: number) => {
+    setDislikedMessages(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.delete(id);
+        setLikedMessages(l => {
+          const lSet = new Set(l);
+          lSet.delete(id);
+          return lSet;
+        });
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
 
   const generateResponse = (userInput: string): { content: string; suggestions: string[] } => {
     const inputLower = userInput.toLowerCase();
@@ -135,6 +178,19 @@ export default function AIAssistantPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const handleSpeak = (content: string, id: number) => {
+    if (speakingId === id) {
+      window.speechSynthesis.cancel();
+      setSpeakingId(null);
+    } else {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(content);
+      utterance.onend = () => setSpeakingId(null);
+      setSpeakingId(id);
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col p-4">
 
@@ -147,7 +203,7 @@ export default function AIAssistantPage() {
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+              className={`flex group ${message.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div className={`flex max-w-[85%] ${message.role === "user" ? "flex-row-reverse" : "flex-row"} gap-2`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
@@ -159,39 +215,79 @@ export default function AIAssistantPage() {
                     <Bot className="w-4 h-4 text-primary" />
                   )}
                 </div>
-                <div className="space-y-2">
-                  <div className={`p-3 rounded-2xl ${
+                <div className="space-y-1">
+                  <div className={`relative p-3 rounded-2xl ${
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted"
                   }`}>
                     <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                    {message.role === "assistant" && (
-                      <button
-                        onClick={() => handleCopy(message.content, message.id)}
-                        className="absolute top-2 right-2 p-1 rounded hover:bg-muted-foreground/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        {copiedId === message.id ? (
-                          <Check className="w-3 h-3 text-green-500" />
-                        ) : (
-                          <Copy className="w-3 h-3" />
-                        )}
-                      </button>
-                    )}
                   </div>
-                  {message.suggestions && message.role === "assistant" && (
-                    <div className="flex flex-wrap gap-1">
-                      {message.suggestions.map((suggestion, i) => (
+                  {message.role === "assistant" && (
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex flex-wrap gap-1">
+                        {message.suggestions?.map((suggestion, i) => (
+                          <Button
+                            key={i}
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleSend(suggestion)}
+                            className="text-xs h-6 px-2 bg-muted hover:bg-muted/80"
+                          >
+                            {suggestion}
+                          </Button>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-0.5">
                         <Button
-                          key={i}
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleSend(suggestion)}
-                          className="text-xs h-7 bg-muted hover:bg-muted/80"
+                          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                          onClick={() => handleSpeak(message.content, message.id)}
                         >
-                          {suggestion}
+                          <Volume2 className={`w-3 h-3 ${speakingId === message.id ? "animate-pulse" : ""}`} />
                         </Button>
-                      ))}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                          onClick={() => handleCopy(message.content, message.id)}
+                        >
+                          {copiedId === message.id ? (
+                            <Check className="w-3 h-3 text-green-500" />
+                          ) : (
+                            <Copy className="w-3 h-3" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                          onClick={() => handleSend(message.content)}
+                        >
+                          <RefreshCw className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-6 w-6 p-0 hover:text-foreground ${
+                            likedMessages.has(message.id) ? "text-green-500" : "text-muted-foreground"
+                          }`}
+                          onClick={() => handleLike(message.id)}
+                        >
+                          <ThumbsUp className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-6 w-6 p-0 hover:text-foreground ${
+                            dislikedMessages.has(message.id) ? "text-red-500" : "text-muted-foreground"
+                          }`}
+                          onClick={() => handleDislike(message.id)}
+                        >
+                          <ThumbsDown className="w-3 h-3" />
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
