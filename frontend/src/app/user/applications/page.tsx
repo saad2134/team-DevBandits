@@ -83,11 +83,6 @@ export default function ApplicationsPage() {
 
   return (
     <div className="p-6 md:p-8 w-full space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold">Applications</h1>
-        <p className="text-muted-foreground">Track your application status</p>
-      </div>
-
       <div className="flex flex-wrap gap-2">
         {tabs.map(tab => {
           const count = tab === "all" 

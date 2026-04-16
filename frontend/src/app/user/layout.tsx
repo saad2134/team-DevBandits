@@ -20,6 +20,7 @@ import {
   GraduationCap,
   FileEdit,
   Target,
+  User,
 } from "lucide-react";
 import Image from "next/image";
 import {
@@ -64,6 +65,8 @@ const appNavItems = [
   {
     items: [
       { title: "Dashboard", url: "/user/dashboard", icon: LayoutDashboard },
+      { title: "Profile", url: "/user/profile", icon: User },
+      { title: "Settings", url: "/user/settings", icon: Settings },
     ],
   },
   {
@@ -221,10 +224,24 @@ function UserSidebar({ children }: { children: React.ReactNode }) {
           <SidebarTrigger />
           <div className="flex-1">
             <h1 className="text-lg font-semibold">
-              {appNavItems
-                .flatMap((cat) => cat.items || [])
-                .find((item) => item.url === pathname)?.title || "Dashboard"}
+              {pathname === '/user/profile' ? 'Profile' : 
+               pathname === '/user/settings' ? 'Settings' : 
+               appNavItems
+                 .flatMap((cat) => cat.items || [])
+                 .find((item) => item.url === pathname)?.title || "Dashboard"}
             </h1>
+            <p className="text-xs text-muted-foreground hidden sm:block">
+              {pathname === '/user/dashboard' && 'Your personal career dashboard'}
+              {pathname === '/user/matched' && 'Opportunities tailored to your profile'}
+              {pathname === '/user/saved' && 'Your bookmarked opportunities'}
+              {pathname === '/user/applications' && 'Track your application status'}
+              {pathname === '/user/explore' && 'Discover all available opportunities'}
+              {pathname === '/user/analytics' && 'Track your performance and insights'}
+              {pathname === '/user/assistant' && 'AI-powered career assistant'}
+              {pathname === '/user/resume' && 'Build and analyze your resume'}
+              {pathname === '/user/profile' && 'Manage your personal information'}
+              {pathname === '/user/settings' && 'Configure your preferences'}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Sheet>

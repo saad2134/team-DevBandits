@@ -109,11 +109,6 @@ export default function AnalyticsPage() {
 
   return (
     <div className="p-6 md:p-8 w-full space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold">Analytics</h1>
-        <p className="text-muted-foreground">Track your performance and insights</p>
-      </div>
-
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
           <Card key={index}>

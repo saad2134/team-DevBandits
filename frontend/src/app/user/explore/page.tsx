@@ -88,11 +88,6 @@ export default function ExplorePage() {
 
   return (
     <div className="p-6 md:p-8 w-full space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold">Explore Opportunities</h1>
-        <p className="text-muted-foreground">Discover all available opportunities</p>
-      </div>
-
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

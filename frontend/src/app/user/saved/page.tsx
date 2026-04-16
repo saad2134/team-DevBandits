@@ -79,11 +79,6 @@ export default function SavedPage() {
 
   return (
     <div className="p-6 md:p-8 w-full space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold">Saved Opportunities</h1>
-        <p className="text-muted-foreground">Your bookmarked opportunities</p>
-      </div>
-
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
