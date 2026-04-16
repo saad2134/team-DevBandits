@@ -18,6 +18,7 @@ import {
   Moon,
   Sparkles,
   GraduationCap,
+  FileEdit,
 } from "lucide-react";
 import Image from "next/image";
 import {
@@ -75,7 +76,7 @@ const appNavItems = [
     title: "Tools",
     items: [
       { title: "AI Assistant", url: "/user/assistant", icon: MessageSquare },
-      { title: "Resume Builder", url: "/user/resume-builder", icon: MessageSquare },
+      { title: "Resume", url: "/user/resume", icon: FileEdit },
     ],
   },
 ];

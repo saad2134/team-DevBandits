@@ -8,7 +8,7 @@ import { API_URL } from "@/lib/utils";
 import { 
   GraduationCap, Briefcase, Award, Search, FileText, TrendingUp, 
   CheckCircle, Sparkles, ArrowRight, ChevronRight, Filter, ArrowUpDown,
-  Brain, Cpu, BarChart3, Wand2, Lightbulb
+  Brain, Cpu, BarChart3, Wand2, Lightbulb, Sunrise, Sun, Sunset, Moon
 } from "lucide-react";
 
 interface AgentActivity {
@@ -179,6 +179,25 @@ export default function DashboardPage() {
     return "Good evening";
   };
 
+  const getGreetingIcon = () => {
+    const hour = new Date().getHours();
+    if (hour < 6) return <Moon className="h-60 w-60" />;
+    if (hour < 12) return <Sunrise className="h-60 w-60" />;
+    if (hour < 17) return <Sun className="h-60 w-60" />;
+    if (hour < 20) return <Sunset className="h-60 w-60" />;
+    return <Moon className="h-60 w-60" />;
+  };
+
+  const getDateTime = () => {
+    const now = new Date();
+    return now.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
   const getInitials = (name: string) => {
     return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
   };
@@ -189,7 +208,11 @@ export default function DashboardPage() {
         <div className="col-span-1 md:col-span-3 space-y-4">
           <div className="bg-gradient-to-r from-primary/80 to-secondary p-6 rounded-2xl text-primary-foreground shadow-xl flex flex-col justify-between relative overflow-hidden">
             <div className="relative z-10">
-              <p className="text-xs font-semibold text-primary-foreground/80 uppercase tracking-wider mb-1">{getGreeting()}</p>
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-xs font-semibold text-primary-foreground/80 uppercase tracking-wider">{getGreeting()}</p>
+                <span className="text-[10px] text-primary-foreground/60">•</span>
+                <p className="text-[10px] text-primary-foreground/80">{getDateTime()}</p>
+              </div>
               <h2 className="text-2xl font-extrabold tracking-tighter">{profile?.name || 'User'}</h2>
               <p className="text-primary-foreground/80 text-sm mt-1">Your scout agent found {opportunities.length} new opportunities</p>
             </div>
@@ -201,8 +224,8 @@ export default function DashboardPage() {
                 Daily Brief
               </Button>
             </div>
-            <div className="absolute right-0 top-0 w-1/3 h-full opacity-10 pointer-events-none">
-              <Sparkles className="h-32 w-32 ml-auto" />
+            <div className="absolute right-0 top-0 w-1/3 h-full opacity-15 pointer-events-none">
+              {getGreetingIcon()}
             </div>
           </div>
           <section className="flex flex-wrap gap-3">
