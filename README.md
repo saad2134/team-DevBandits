@@ -15,7 +15,6 @@
 
 ---
 
-
 ## Getting Started (Development)
 
 ### Step 1 — Fork this Repository
@@ -39,25 +38,81 @@ git commit -m "Your commit message"
 git push origin main
 ```
 
-### Step 4 — Run & Test project locally.
-Check instructions to run project locally.
+### Step 4 — Run & Test project locally
+```bash
+# Backend
+cd backend
+pip install -r requirements.txt
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# Frontend
+cd frontend
+npm install
+npm run dev
+```
 
 ---
 
 ## 🎯 Problem Statement
 
-
-Internships, hackathons, research openings, and scholarships are scattered across a dozen
-platforms and notice boards. Students either find out too late, apply for things they are
-underqualified for, or miss opportunities entirely because no one pointed them in the right direction.
+Internships, hackathons, research openings, and scholarships are scattered across a dozen platforms and notice boards. Students either find out too late, apply for things they are underqualified for, or miss opportunities entirely because no one pointed them in the right direction.
 
 ### Description:
-Build an AI agent that maintains a profile for each student covering skills, CGPA, year, branch, and
-goals, and scans opportunity platforms in the background. It filters and ranks results against the
-student profile and delivers a daily shortlist tailored to them. When a student opens a listing, the
-agent audits their resume against it and drafts a cover letter or cold email. Over time it learns what
-the student actually engages with and adjusts accordingly.
+Build an AI agent that maintains a profile for each student covering skills, CGPA, year, branch, and goals, and scans opportunity platforms in the background. It filters and ranks results against the student profile and delivers a daily shortlist tailored to them. When a student opens a listing, the agent audits their resume against it and drafts a cover letter or cold email. Over time it learns what the student actually engages with and adjusts accordingly.
 
+---
+
+## 🏛️ Architecture
+
+```mermaid
+graph TB
+    subgraph Client["Frontend (Next.js)"]
+        Landing[Landing Page]
+        Login[Login]
+        Signup[Signup]
+        Dashboard[Dashboard]
+        Audit[Resume Audit]
+        Profile[Profile Edit]
+    end
+
+    subgraph Backend["Backend (FastAPI)"]
+        Auth[Auth API]
+        ProfileAPI[Profile API]
+        OppAPI[Opportunities API]
+        Match[Matching Engine]
+        AuditAPI[Resume Auditor]
+    end
+
+    subgraph Engine["Matching Engine (Built-in)"]
+        Score[Skill Scoring]
+        Rank[Ranking Algorithm]
+        Cover[Cover Letter Gen]
+    end
+
+    subgraph DB["Data Layer (SQLite)"]
+        Student[(Student DB)]
+        Opp[(Opportunities)]
+        Engage[(Engagements)]
+    end
+
+    Landing --> Login
+    Login --> Dashboard
+    Signup --> Dashboard
+    Dashboard --> Match
+    Dashboard --> Audit
+
+    Match -->|HTTP| ProfileAPI
+    Match -->|HTTP| OppAPI
+    Match --> Score
+    Score --> Rank
+    Audit -->|HTTP| ProfileAPI
+    Audit -->|HTTP| OppAPI
+    Audit --> Cover
+
+    ProfileAPI --> Student
+    OppAPI --> Opp
+    Rank --> Cover
+```
 
 ---
 
@@ -84,4 +139,4 @@ For any queries, reach out to us at:
 
 ## ✍️ Endnote
 
-> Good luck to all participating teams! 
+> Good luck to all participating teams!

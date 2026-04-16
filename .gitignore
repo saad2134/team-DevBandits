@@ -1,2 +1,8 @@
 CONTEXT.txt
 LOGS.txt
+node_modules
+.next
+*.db
+__pycache__
+*.pyc
+.env
