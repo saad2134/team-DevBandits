@@ -114,7 +114,6 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
       <div className="space-y-8">
-        {/* Hero Section */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="col-span-1 md:col-span-2 bg-gradient-to-r from-[#3525cd] to-[#8127cf] p-8 rounded-2xl text-white shadow-xl flex flex-col justify-between relative overflow-hidden min-h-[220px]">
             <div className="relative z-10">
@@ -173,7 +172,6 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* Stats */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
             <p className="text-xs font-bold text-slate-500/70 uppercase tracking-wider mb-2">Opportunities Found</p>
@@ -198,7 +196,6 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* Recommended Opportunities */}
         <section>
           <div className="flex justify-between items-end mb-6">
             <div>
