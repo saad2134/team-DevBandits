@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "OpportunityRadar",
+  name: "CareerCompass",
   version: "v1.0.0",
   url: "http://localhost:3000",
   getStartedUrl: "/",

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { API_URL } from "@/lib/utils";
+import { siteConfig } from "@/config/site";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -63,11 +64,11 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-10">
+    <div className="min-h-screen flex items-center justify-center bg-background py-10">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Create Your Profile</CardTitle>
-          <CardDescription>Join OpportunityRadar to get personalized opportunities</CardDescription>
+          <CardDescription>Join {siteConfig.name} to get personalized opportunities</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -152,6 +153,25 @@ export default function SignupPage() {
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Creating account..." : "Create Account"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full mt-2"
+              onClick={() => {
+                setFormData({
+                  email: "demo@example.com",
+                  password: "demo123",
+                  name: "Demo Student",
+                  cgpa: "8.5",
+                  year: "3",
+                  branch: "Computer Science",
+                  skills: "Python, JavaScript, React",
+                  goals: "Software Engineering, Full Stack Development",
+                });
+              }}
+            >
+              Fill Demo Data
             </Button>
           </form>
           <p className="mt-4 text-center text-sm text-gray-600">

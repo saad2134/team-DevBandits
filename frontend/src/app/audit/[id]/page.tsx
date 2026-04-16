@@ -27,6 +27,7 @@ interface AuditData {
     description: string;
     requirements: string[];
     deadline: string | null;
+    url?: string;
   };
   match_score: number;
   matched_skills: string[];
@@ -108,8 +109,8 @@ export default function AuditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
+    <div className="min-h-screen bg-background">
+      <header className="bg-card border-b border-border">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <GraduationCap className="h-6 w-6 text-primary" />
@@ -189,7 +190,7 @@ export default function AuditPage() {
                     </h3>
                     <ul className="space-y-2">
                       {auditData.suggestions.map((suggestion, i) => (
-                        <li key={i} className="text-sm bg-yellow-50 p-2 rounded">
+                        <li key={i} className="text-sm bg-yellow-500 p-2 rounded">
                           {suggestion}
                         </li>
                       ))}
@@ -212,7 +213,7 @@ export default function AuditPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="bg-white border rounded-lg p-6 whitespace-pre-wrap text-sm font-mono">
+                <div className="bg-background/30 border rounded-lg p-6 whitespace-pre-wrap text-sm font-mono">
                   {auditData.cover_letter}
                 </div>
                 <div className="flex gap-2 mt-4">
