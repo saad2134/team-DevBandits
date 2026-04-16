@@ -19,6 +19,7 @@ import {
   Sparkles,
   GraduationCap,
 } from "lucide-react";
+import Image from "next/image";
 import {
   Sidebar,
   SidebarContent,
@@ -51,7 +52,7 @@ import { siteConfig } from "@/config/site";
 
 const appNavItems = [
   {
-    title: "Main",
+   
     items: [
       { title: "Dashboard", url: "/user/dashboard", icon: LayoutDashboard },
     ],
@@ -110,22 +111,26 @@ function UserSidebar({ children }: { children: React.ReactNode }) {
       <Sidebar collapsible="offcanvas" className="border-r border-foreground/10 z-200">
         <SidebarHeader className="py-4">
           <div className="flex items-center gap-3 px-2">
-            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-primary-foreground" />
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+              
+                <Image src="/favicon.svg" alt="Logo" width={30} height={30} />
+              
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-sm">{siteConfig.name}</span>
-              <span className="text-xs text-muted-foreground">Student Portal</span>
+              <span className="text-xs text-muted-foreground">v1.1.5</span>
             </div>
           </div>
         </SidebarHeader>
 
         <SidebarContent>
           {appNavItems.map((category) => (
-            <SidebarGroup key={category.title}>
-              <SidebarGroupLabel className="text-primary font-semibold px-2 mb-1">
-                {category.title}
-              </SidebarGroupLabel>
+            <SidebarGroup key={category.title || "untitled"}>
+              {category.title && (
+                <SidebarGroupLabel className="text-primary font-semibold px-2 mb-1">
+                  {category.title}
+                </SidebarGroupLabel>
+              )}
               <SidebarMenu>
                 {category.items?.map((item) => {
                   const isActive = pathname === item.url;

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
+import Image from "next/image";
 import { siteConfig } from "@/config/site";
 
 function Footer({ className, ...props }: React.ComponentProps<"div">) {
@@ -108,7 +108,7 @@ export default function FooterSection({
             <FooterColumn className="lg:col-span-2">
               <div className="flex flex-col gap-4">
                 <Link href="/" className="flex items-center gap-2">
-                  <GraduationCap className="h-6 w-6 text-primary" />
+                  <Image src="/favicon.svg" alt="Logo" width={24} height={24} className="text-primary" />
                   <span className="font-bold text-lg text-foreground">{siteConfig.name}</span>
                 </Link>
                 <p className="text-muted-foreground text-sm max-w-md">

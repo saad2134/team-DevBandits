@@ -41,7 +41,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Welcome Back</CardTitle>
@@ -95,6 +95,11 @@ export default function LoginPage() {
           </p>
         </CardContent>
       </Card>
+      <p className="mt-6 text-sm">
+        <Link href="/" className="text-muted-foreground hover:text-primary">
+          ← Back to Home
+        </Link>
+      </p>
     </div>
   );
 }

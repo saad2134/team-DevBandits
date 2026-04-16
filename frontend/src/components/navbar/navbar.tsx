@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Menu, X, Sun, Moon } from "lucide-react";
+import { Menu, X, Sun, Moon } from "lucide-react";
+import Image from "next/image";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,7 +41,7 @@ export default function NavbarComponent({
     <div className="fixed inset-x-0 top-4 z-50 w-full px-4">
       <div className="relative mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-lg bg-background/80 backdrop-blur-md px-6 py-3 lg:flex dark:bg-background/80 border border-border/20">
         <Link href="/" className="flex items-center gap-2">
-          <GraduationCap className="h-6 w-6 text-primary" />
+          <Image src="/favicon.svg" alt="Logo" width={24} height={24} className="text-primary" />
           <span className="font-bold text-foreground">{siteConfig.name}</span>
         </Link>
 
@@ -82,7 +83,7 @@ export default function NavbarComponent({
       <div className="relative top-4 z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-col items-center justify-between bg-background/80 backdrop-blur-md px-4 py-3 lg:hidden border border-border/20">
         <div className="flex w-full flex-row items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
-            <GraduationCap className="h-6 w-6 text-primary" />
+            <Image src="/favicon.svg" alt="Logo" width={24} height={24} className="text-primary" />
             <span className="font-bold text-foreground">{siteConfig.name}</span>
           </Link>
           <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-foreground p-2">

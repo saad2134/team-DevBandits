@@ -64,7 +64,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background py-10">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background py-10">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Create Your Profile</CardTitle>
@@ -182,6 +182,11 @@ export default function SignupPage() {
           </p>
         </CardContent>
       </Card>
+      <p className="mt-6 text-sm">
+        <Link href="/" className="text-muted-foreground hover:text-primary">
+          ← Back to Home
+        </Link>
+      </p>
     </div>
   );
 }
