@@ -2,19 +2,19 @@
 
 Welcome to the official hackathon repository by [GDG,UCE-OU].
 This repository serves as the starting point for all participating teams.
-Title of your repository shall be : team-(your team name)
+Title of your repository shall be : team-DevBandits
 
 ## Team Details
 
 After forking, fill in your team details below in your fork's README
 
-- **Team Name:**
-- **Team Lead:**
+- **Team Name:** DevBandits
+- **Team Lead:** Abdur Rahman Qasim
 - **Team Members:**
-  - Member 1:
-  - Member 2:
-  - Member 3:
-  - Member 4:
+  - Member 1: Abdur Rahman Qasim (Team Lead)
+  - Member 2: Fareed Ahmed Owais
+  - Member 3: Mohammed Saad Uddin
+  - Member 4: Mohammed Khwaja
 
 ---
 
