@@ -106,10 +106,10 @@ export default function FooterSection({
   copyright?: string;
 }) {
   return (
-    <footer className="relative w-full px-8 pt-14 pb-8 bg-muted/50">
-      <div className="max-w-7xl mx-auto">
-        <Footer>
-          <FooterContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
+    <footer className="relative w-full px-8 pt-14 pb-8">
+      <div className="max-w-7xl mx-auto ">
+        <Footer className="bg-muted/10">
+          <FooterContent className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
             <FooterColumn className="lg:col-span-2">
               <div className="flex flex-col gap-4">
                 <Link href="/" className="flex items-center gap-2">

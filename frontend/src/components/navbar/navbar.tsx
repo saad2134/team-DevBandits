@@ -37,14 +37,14 @@ export default function NavbarComponent({
   const { setTheme, theme } = useTheme();
 
   return (
-    <div className="fixed inset-x-0 top-4 z-50 w-full">
-      <div className="relative mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-lg bg-background/80 backdrop-blur-md px-4 py-3 lg:flex dark:bg-background/80 border border-border/20">
+    <div className="fixed inset-x-0 top-4 z-50 w-full px-4">
+      <div className="relative mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-lg bg-background/80 backdrop-blur-md px-6 py-3 lg:flex dark:bg-background/80 border border-border/20">
         <Link href="/" className="flex items-center gap-2">
           <GraduationCap className="h-6 w-6 text-primary" />
           <span className="font-bold text-foreground">{siteConfig.name}</span>
         </Link>
 
-        <div className="absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-medium text-foreground/70 hover:text-foreground lg:flex lg:space-x-2">
+        <div className="hidden flex-row items-center justify-center gap-2 text-sm font-medium text-foreground/70 hover:text-foreground lg:flex">
           {navItems.map((item, idx) => (
             <Link key={`link-${idx}`} href={item.link} className="px-4 py-2 text-foreground hover:text-primary transition-colors">
               {item.name}
@@ -79,7 +79,7 @@ export default function NavbarComponent({
       </div>
 
       {/* Mobile Navigation */}
-      <div className="relative top-4 z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-col items-center justify-between bg-background/80 backdrop-blur-md px-0 py-3 lg:hidden border border-border/20">
+      <div className="relative top-4 z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-col items-center justify-between bg-background/80 backdrop-blur-md px-4 py-3 lg:hidden border border-border/20">
         <div className="flex w-full flex-row items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
             <GraduationCap className="h-6 w-6 text-primary" />
