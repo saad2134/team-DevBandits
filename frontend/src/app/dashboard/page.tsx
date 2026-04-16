@@ -166,6 +166,23 @@ export default function DashboardPage() {
             <p className="text-xs font-semibold mb-2">Power up your search</p>
             <Button className="w-full py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg text-xs font-bold transition-all">
               Upgrade to Pro
+    <div className="min-h-screen bg-background">
+      <header className="bg-card border-b border-border">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            <GraduationCap className="h-6 w-6 text-primary" />
+            <span className="text-xl font-bold">{siteConfig.name}</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">Welcome, {profile?.name}</span>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                localStorage.clear();
+                router.push("/login");
+              }}
+            >
+              Logout
             </Button>
           </div>
         </div>
@@ -242,6 +259,18 @@ export default function DashboardPage() {
                   <div>
                     <p className="text-xs font-semibold text-slate-700">Ranking opportunities for you</p>
                     <p className="text-[10px] text-slate-500">Just now</p>
+                <div>
+                  <p className="text-sm text-gray-500">Skills</p>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {profile?.skills?.length ? (
+                      profile.skills.map((skill, i) => (
+                        <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                          {skill}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-400">No skills added</p>
+                    )}
                   </div>
                 </div>
               </div>
