@@ -73,11 +73,6 @@ export default function FooterSection({
         { text: "Home", href: "/" },
         { text: "Login", href: "/login" },
         { text: "Signup", href: "/signup" },
-      ],
-    },
-    {
-      appName: "Platform",
-      links: [
         { text: "Dashboard", href: "/dashboard" },
         { text: "Opportunities", href: "/opportunities" },
         { text: "Resume Audit", href: "/audit/1" },

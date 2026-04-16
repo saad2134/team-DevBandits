@@ -75,6 +75,17 @@ export default function LoginPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Signing in..." : "Sign In"}
             </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full mt-2"
+              onClick={() => {
+                setEmail("demo@example.com");
+                setPassword("demo123");
+              }}
+            >
+              Fill Demo Data
+            </Button>
           </form>
           <p className="mt-4 text-center text-sm text-gray-600">
             Don't have an account?{" "}

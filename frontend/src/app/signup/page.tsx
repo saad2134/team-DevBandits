@@ -153,6 +153,25 @@ export default function SignupPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Creating account..." : "Create Account"}
             </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full mt-2"
+              onClick={() => {
+                setFormData({
+                  email: "demo@example.com",
+                  password: "demo123",
+                  name: "Demo Student",
+                  cgpa: "8.5",
+                  year: "3",
+                  branch: "Computer Science",
+                  skills: "Python, JavaScript, React",
+                  goals: "Software Engineering, Full Stack Development",
+                });
+              }}
+            >
+              Fill Demo Data
+            </Button>
           </form>
           <p className="mt-4 text-center text-sm text-gray-600">
             Already have an account?{" "}
