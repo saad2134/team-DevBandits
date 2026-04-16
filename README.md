@@ -116,6 +116,30 @@ graph TB
 
 ---
 
+## 🛠️ Tech Stack
+
+### Frontend
+- **Framework**: Next.js 15
+- **UI**: React 19, Tailwind CSS
+- **Language**: TypeScript
+- **Components**: shadcn/ui, Lucide React
+
+### Backend
+- **Framework**: FastAPI (Python)
+- **Database**: SQLite, SQLAlchemy
+- **Validation**: Pydantic
+- **Server**: Uvicorn
+
+### Dependencies
+```
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+```
+
+---
+
 ## 📋 Rules & Regulations
 
 - Use of AI is permitted
