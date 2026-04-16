@@ -58,23 +58,24 @@ const appNavItems = [
     ],
   },
   {
-    title: "Explore",
+    title: "Oppurtunities",
     items: [
-      { title: "Compass", url: "/user/explore", icon: Compass },
+      { title: "Explore", url: "/user/explore", icon: Compass },
       { title: "Saved", url: "/user/saved", icon: Bookmark },
       { title: "Applications", url: "/user/applications", icon: FileText },
     ],
   },
   {
-    title: "Analytics",
+    title: "Insights",
     items: [
-      { title: "Insights", url: "/user/insights", icon: BarChart2 },
+      { title: "Analytics", url: "/user/analytics", icon: BarChart2 },
     ],
   },
   {
-    title: "Support",
+    title: "Tools",
     items: [
       { title: "AI Assistant", url: "/user/assistant", icon: MessageSquare },
+      { title: "Resume Builder", url: "/user/resume-builder", icon: MessageSquare },
     ],
   },
 ];

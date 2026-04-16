@@ -7,8 +7,67 @@ import { Card } from "@/components/ui/card";
 import { API_URL } from "@/lib/utils";
 import { 
   GraduationCap, Briefcase, Award, Search, FileText, TrendingUp, 
-  CheckCircle, Sparkles, ArrowRight, ChevronRight, Filter, ArrowUpDown
+  CheckCircle, Sparkles, ArrowRight, ChevronRight, Filter, ArrowUpDown,
+  Brain, Cpu, BarChart3, Wand2, Lightbulb
 } from "lucide-react";
+
+interface AgentActivity {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  status: "idle" | "running" | "completed" | "error";
+  message: string;
+  timestamp: string;
+  color: string;
+}
+
+const demoAgentActivity: AgentActivity[] = [
+  {
+    id: "scout",
+    name: "Scout Agent",
+    icon: <Search className="h-4 w-4" />,
+    status: "completed",
+    message: "Scanned 47 platforms for new opportunities",
+    timestamp: "2 min ago",
+    color: "text-blue-500",
+  },
+  {
+    id: "analyzer",
+    name: "Analyzer Agent",
+    icon: <Cpu className="h-4 w-4" />,
+    status: "completed",
+    message: "Processed 23 new raw opportunity listings",
+    timestamp: "1 min ago",
+    color: "text-purple-500",
+  },
+  {
+    id: "matcher",
+    name: "Matcher Agent",
+    icon: <BarChart3 className="h-4 w-4" />,
+    status: "running",
+    message: "Matching 18 opportunities to your profile...",
+    timestamp: "Just now",
+    color: "text-green-500",
+  },
+  {
+    id: "auditor",
+    name: "Auditor Agent",
+    icon: <Wand2 className="h-4 w-4" />,
+    status: "idle",
+    message: "Ready to analyze applications on demand",
+    timestamp: "Waiting",
+    color: "text-orange-500",
+  },
+  {
+    id: "learner",
+    name: "Learner Agent",
+    icon: <Brain className="h-4 w-4" />,
+    status: "running",
+    message: "Learning your preferences from 156 interactions",
+    timestamp: "Running",
+    color: "text-pink-500",
+  },
+];
 
 interface StudentProfile {
   id: number;
@@ -113,70 +172,107 @@ export default function DashboardPage() {
     );
   }
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  };
+
   return (
-    <div className="p-6 md:p-8 space-y-8">
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="col-span-1 md:col-span-2 bg-gradient-to-r from-primary/80 to-secondary p-8 rounded-2xl text-primary-foreground shadow-xl flex flex-col justify-between relative overflow-hidden min-h-[220px]">
-          <div className="relative z-10">
-            <h2 className="text-3xl font-extrabold tracking-tighter mb-2">Welcome back, {profile?.name || 'User'}</h2>
-            <p className="text-primary-foreground/80 max-w-md">Your scout agent found {opportunities.length} new opportunities tailored to your profile.</p>
+    <div className="p-6 md:p-8 space-y-6">
+      <section className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <div className="col-span-1 md:col-span-3 space-y-4">
+          <div className="bg-gradient-to-r from-primary/80 to-secondary p-6 rounded-2xl text-primary-foreground shadow-xl flex flex-col justify-between relative overflow-hidden">
+            <div className="relative z-10">
+              <p className="text-xs font-semibold text-primary-foreground/80 uppercase tracking-wider mb-1">{getGreeting()}</p>
+              <h2 className="text-2xl font-extrabold tracking-tighter">{profile?.name || 'User'}</h2>
+              <p className="text-primary-foreground/80 text-sm mt-1">Your scout agent found {opportunities.length} new opportunities</p>
+            </div>
+            <div className="relative z-10 flex gap-3 mt-4">
+              <Button className="bg-primary-foreground text-primary px-4 py-2 rounded-lg font-bold text-xs shadow-lg hover:scale-105 transition-transform">
+                Review Matches
+              </Button>
+              <Button className="bg-white/20 backdrop-blur-md text-primary-foreground px-4 py-2 rounded-lg font-bold text-xs hover:bg-white/30 transition-all">
+                Daily Brief
+              </Button>
+            </div>
+            <div className="absolute right-0 top-0 w-1/3 h-full opacity-10 pointer-events-none">
+              <Sparkles className="h-32 w-32 ml-auto" />
+            </div>
           </div>
-          <div className="relative z-10 flex gap-4 mt-6">
-            <Button className="bg-primary-foreground text-primary px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg hover:scale-105 transition-transform">
-              Review Matches
-            </Button>
-            <Button className="bg-white/20 backdrop-blur-md text-primary-foreground px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-white/30 transition-all">
-              Daily Brief
-            </Button>
-          </div>
-          <div className="absolute right-0 top-0 w-1/3 h-full opacity-10 pointer-events-none">
-            <Sparkles className="h-48 w-48 ml-auto" />
-          </div>
+          <section className="flex flex-wrap gap-3">
+            {profile?.skills?.length ? (
+              <div className="bg-muted rounded-xl p-3 border border-border flex-1 min-w-[200px]">
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-[9px] uppercase font-bold text-muted-foreground">Skills</p>
+                  {profile.skills.length > 12 && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-5 px-2 text-[9px] font-bold text-primary hover:text-primary/80"
+                      onClick={() => router.push("/user/profile")}
+                    >
+                      View All ({profile.skills.length})
+                    </Button>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {profile.skills.slice(0, 12).map((skill, i) => (
+                    <span key={i} className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            {profile?.branch && (
+              <div className="bg-muted rounded-xl p-3 border border-border">
+                <p className="text-[9px] uppercase font-bold text-muted-foreground mb-1">Branch</p>
+                <span className="text-xs font-medium text-foreground">{profile.branch}</span>
+              </div>
+            )}
+            {profile?.year && (
+              <div className="bg-muted rounded-xl p-3 border border-border">
+                <p className="text-[9px] uppercase font-bold text-muted-foreground mb-1">Year</p>
+                <span className="text-xs font-medium text-foreground">{profile.year}</span>
+              </div>
+            )}
+            {profile?.cgpa && (
+              <div className="bg-muted rounded-xl p-3 border border-border">
+                <p className="text-[9px] uppercase font-bold text-muted-foreground mb-1">CGPA</p>
+                <span className="text-xs font-medium text-foreground">{profile.cgpa}</span>
+              </div>
+            )}
+          </section>
         </div>
-        <div className="bg-muted rounded-2xl p-6 border border-border flex flex-col">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-2 h-2 bg-secondary rounded-full animate-pulse"></div>
-            <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Live Agent Activity</span>
+        <div className="col-span-1 md:col-span-2 bg-muted rounded-2xl p-4 border border-border flex flex-col">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Live Agents</span>
           </div>
-          <div className="space-y-4 flex-grow">
-            <div className="flex gap-3">
-              <Search className="text-primary h-5 w-5" />
-              <div>
-                <p className="text-xs font-semibold text-foreground">Scout Agent scanning platforms...</p>
-                <p className="text-[10px] text-muted-foreground">2 minutes ago</p>
+          <div className="space-y-2 flex-grow overflow-y-auto">
+            {demoAgentActivity.map((agent) => (
+              <div key={agent.id} className="flex items-start gap-2">
+                <div className={`${agent.color} mt-0.5`}>
+                  {agent.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-semibold text-foreground truncate">{agent.name}</p>
+                  <p className="text-[9px] text-muted-foreground truncate">{agent.message}</p>
+                </div>
+                <div className={`w-2 h-2 rounded-full ${
+                  agent.status === "running" ? "bg-green-500 animate-pulse" :
+                  agent.status === "completed" ? "bg-green-500" :
+                  agent.status === "error" ? "bg-red-500" :
+                  "bg-gray-400"
+                }`}></div>
               </div>
-            </div>
-            <div className="flex gap-3">
-              <CheckCircle className="text-secondary h-5 w-5" />
-              <div>
-                <p className="text-xs font-semibold text-foreground">{opportunities.length} new opportunities found</p>
-                <p className="text-[10px] text-muted-foreground">5 minutes ago</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <TrendingUp className="text-primary h-5 w-5" />
-              <div>
-                <p className="text-xs font-semibold text-foreground">Ranking opportunities for you</p>
-                <p className="text-[10px] text-muted-foreground">Just now</p>
-              </div>
-            </div>
-          </div>
-          <div className="mt-4 pt-4 border-t border-border">
-            <p className="text-sm text-muted-foreground mb-2">Skills</p>
-            <div className="flex flex-wrap gap-1">
-              {profile?.skills?.length ? (
-                profile.skills.map((skill, i) => (
-                  <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                    {skill}
-                  </span>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">No skills added</p>
-              )}
-            </div>
-            <div className="w-full bg-muted-foreground/20 rounded-full h-1.5 overflow-hidden mt-3">
-              <div className="bg-primary h-full w-2/3"></div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
