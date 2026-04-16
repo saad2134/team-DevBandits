@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { API_URL } from "@/lib/utils";
+import { siteConfig } from "@/config/site";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -67,7 +68,7 @@ export default function SignupPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Create Your Profile</CardTitle>
-          <CardDescription>Join OpportunityRadar to get personalized opportunities</CardDescription>
+          <CardDescription>Join {siteConfig.name} to get personalized opportunities</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
