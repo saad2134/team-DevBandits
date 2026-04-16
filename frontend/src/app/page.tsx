@@ -15,6 +15,11 @@ import {
   Code,
   Clock,
   Star,
+  Target,
+  Brain,
+  Gauge,
+  Lightbulb,
+  Users,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -178,6 +183,102 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-bold mb-4">Personalized Recommendations</h3>
               <p className="text-muted-foreground leading-relaxed text-sm">Receive a curated weekly digest of career moves, upskilling opportunities, and networking events.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* How It Works Section */}
+        <section className="py-32 px-8 max-w-7xl mx-auto">
+          <div className="mb-16">
+            <span className="text-xs font-bold uppercase tracking-widest text-primary mb-4 block">How It Works</span>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-foreground leading-tight">Your Personal Career AI Team</h2>
+            <p className="text-lg text-muted-foreground mt-4 max-w-2xl">
+              Five specialized AI agents work together to find and land your dream opportunities.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Scout Agent */}
+            <div className="bg-muted p-6 rounded-2xl">
+              <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mb-4">
+                <Search className="w-6 h-6 text-blue-500" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Scout Agent</h3>
+              <p className="text-sm text-blue-600 font-medium mb-3">The Opportunity Finder</p>
+              <p className="text-sm text-muted-foreground">
+                Continuously monitors multiple sources and prioritizes opportunities based on freshness, relevance, and completeness—not just keyword matches.
+              </p>
+            </div>
+
+            {/* Analyzer Agent */}
+            <div className="bg-muted p-6 rounded-2xl">
+              <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4">
+                <Code className="w-6 h-6 text-purple-500" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Analyzer Agent</h3>
+              <p className="text-sm text-purple-600 font-medium mb-3">The Opportunity Processor</p>
+              <p className="text-sm text-muted-foreground">
+                Standardizes messy, inconsistent listings into structured data - extracting skills needed, eligibility criteria, and deadlines for accurate matching.
+              </p>
+            </div>
+
+            {/* Matcher Agent */}
+            <div className="bg-muted p-6 rounded-2xl">
+              <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center mb-4">
+                <Target className="w-6 h-6 text-green-500" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Matcher Agent</h3>
+              <p className="text-sm text-green-600 font-medium mb-3">The Fit Calculator</p>
+              <p className="text-sm text-muted-foreground">
+                Ensures you only see opportunities you're realistically competitive for - ranks everything by your match score so you don't waste applications.
+              </p>
+            </div>
+
+            {/* Auditor Agent */}
+            <div className="bg-muted p-6 rounded-2xl">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center mb-4">
+                <Gauge className="w-6 h-6 text-amber-500" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Auditor Agent</h3>
+              <p className="text-sm text-amber-600 font-medium mb-3">Your Resume Reviewer</p>
+              <p className="text-sm text-muted-foreground">
+                Simulates a recruiter's perspective - highlights your strengths, identifies gaps, and gives suggestions to improve your application quality.
+              </p>
+            </div>
+
+            {/* Learner Agent */}
+            <div className="bg-muted p-6 rounded-2xl">
+              <div className="w-12 h-12 rounded-xl bg-pink-500/20 flex items-center justify-center mb-4">
+                <Brain className="w-6 h-6 text-pink-500" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Learner Agent</h3>
+              <p className="text-sm text-pink-600 font-medium mb-3">The Smart Improver</p>
+              <p className="text-sm text-muted-foreground">
+                Watches what you click, save, and apply to - learns your preferences and improves recommendations over time.
+              </p>
+            </div>
+
+            {/* Summary */}
+            <div className="bg-gradient-to-br from-primary/10 to-secondary/10 p-6 rounded-2xl flex flex-col justify-center">
+              <h3 className="text-lg font-bold mb-2">How They Help You</h3>
+              <ul className="text-sm text-muted-foreground space-y-2">
+                <li className="flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-primary mt-0.5" />
+                  Find opportunities while you sleep
+                </li>
+                <li className="flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-primary mt-0.5" />
+                  Get personalized match scores
+                </li>
+                <li className="flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-primary mt-0.5" />
+                  Improve your applications
+                </li>
+                <li className="flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-primary mt-0.5" />
+                  Learn and adapt to your goals
+                </li>
+              </ul>
             </div>
           </div>
         </section>

@@ -65,9 +65,7 @@ const appNavItems = [
   {
     items: [
       { title: "Dashboard", url: "/user/dashboard", icon: LayoutDashboard },
-      { title: "Profile", url: "/user/profile", icon: User },
-      { title: "Settings", url: "/user/settings", icon: Settings },
-    ],
+     ],
   },
   {
     title: "Oppurtunities",

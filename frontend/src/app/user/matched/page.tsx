@@ -45,13 +45,30 @@ export default function MatchedPage() {
 
     const fetchMatches = async () => {
       try {
-        const res = await fetch(`${API_URL}/matches/${studentId}`);
-        const data = await res.json();
-        if (data.matches) {
-          setOpportunities(data.matches.map((m: any) => ({
-            ...m.opportunity,
-            match_score: m.match_score
-          })));
+        // Get all opportunities first
+        const oppRes = await fetch(`${API_URL}/opportunities`);
+        const allOpps = await oppRes.json();
+        
+        if (allOpps && allOpps.length > 0) {
+          // Use Matcher Agent for vectorized matching
+          const matchRes = await fetch(`${API_URL}/api/agent/matcher`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              student_id: parseInt(studentId),
+              opportunity_ids: allOpps.map((o: any) => o.id)
+            })
+          });
+          const matchData = await matchRes.json();
+          
+          if (matchData.ranked_matches) {
+            setOpportunities(matchData.ranked_matches.map((m: any) => ({
+              ...m.opportunity,
+              match_score: m.match_score,
+              matched_skills: m.matched_skills,
+              missing_skills: m.missing_skills
+            })));
+          }
         }
       } catch (error) {
         console.error("Failed to fetch matches:", error);
@@ -71,7 +88,26 @@ export default function MatchedPage() {
     return matchesSearch && matchesType;
   });
 
-  const toggleSaved = (id: number) => {
+  const toggleSaved = async (id: number) => {
+    const studentId = localStorage.getItem("student_id");
+    const isSaved = savedIds.includes(id);
+    
+    if (studentId) {
+      try {
+        await fetch(`${API_URL}/api/saved`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            student_id: parseInt(studentId),
+            opportunity_id: id,
+            action: isSaved ? "unsave" : "save"
+          })
+        });
+      } catch (error) {
+        console.error("Failed to save/unsave:", error);
+      }
+    }
+    
     setSavedIds(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );

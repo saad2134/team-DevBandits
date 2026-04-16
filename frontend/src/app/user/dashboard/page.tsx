@@ -118,9 +118,22 @@ export default function DashboardPage() {
         const profileData = await profileRes.json();
         setProfile(profileData);
 
-        const matchesRes = await fetch(`${API_URL}/matches/${studentId}`);
-        const matchesData = await matchesRes.json();
-        setOpportunities(matchesData);
+        // Use Matcher Agent for top matches
+        const oppRes = await fetch(`${API_URL}/opportunities`);
+        const allOpps = await oppRes.json();
+        
+        if (allOpps && allOpps.length > 0) {
+          const matchRes = await fetch(`${API_URL}/api/agent/matcher`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              student_id: parseInt(studentId),
+              opportunity_ids: allOpps.slice(0, 5).map((o: any) => o.id)
+            })
+          });
+          const matchData = await matchRes.json();
+          setOpportunities(matchData.ranked_matches || []);
+        }
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
@@ -135,13 +148,14 @@ export default function DashboardPage() {
     const studentId = localStorage.getItem("student_id");
     if (!studentId) return;
 
-    await fetch(`${API_URL}/engage`, {
+    // Track with Learner Agent
+    await fetch(`${API_URL}/api/agent/learner/feedback`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         student_id: parseInt(studentId),
-        opportunity_id: oppId,
-        action,
+        action_type: action,
+        opportunity_id: oppId
       }),
     });
   };

@@ -14,7 +14,6 @@ import {
 
 interface SavedOpportunity {
   id: number;
-  opp_id: number;
   title: string;
   organization: string;
   type: string;
@@ -39,7 +38,7 @@ export default function SavedPage() {
 
     const fetchSaved = async () => {
       try {
-        const res = await fetch(`${API_URL}/saved/${studentId}`);
+        const res = await fetch(`${API_URL}/api/saved/${studentId}`);
         const data = await res.json();
         setSavedOpps(data.opportunities || []);
       } catch (error) {
@@ -58,7 +57,24 @@ export default function SavedPage() {
   );
 
   const handleRemove = async (oppId: number) => {
-    setSavedOpps(prev => prev.filter(o => o.opp_id !== oppId));
+    const studentId = localStorage.getItem("student_id");
+    if (!studentId) return;
+    
+    try {
+      await fetch(`${API_URL}/api/saved`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          student_id: parseInt(studentId),
+          opportunity_id: oppId,
+          action: "unsave"
+        })
+      });
+    } catch (error) {
+      console.error("Failed to unsave:", error);
+    }
+    
+    setSavedOpps(prev => prev.filter(o => o.id !== oppId));
   };
 
   const getTypeIcon = (type: string) => {
@@ -97,7 +113,7 @@ export default function SavedPage() {
 
       <div className="grid gap-4">
         {filteredOps.map(opp => (
-          <Card key={opp.opp_id} className="hover:shadow-md transition-shadow">
+          <Card key={opp.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
@@ -116,7 +132,7 @@ export default function SavedPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleRemove(opp.opp_id)}
+                  onClick={() => handleRemove(opp.id)}
                 >
                   <Trash2 className="w-5 h-5 text-muted-foreground" />
                 </Button>

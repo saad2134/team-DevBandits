@@ -44,9 +44,55 @@ export default function ExplorePage() {
 
     const fetchOpportunities = async () => {
       try {
-        const res = await fetch(`${API_URL}/opportunities`);
-        const data = await res.json();
-        setOpportunities(data || []);
+        const studentId = localStorage.getItem("student_id");
+        
+        // Get student profile for personalized search
+        let keywords: string[] = [];
+        if (studentId) {
+          try {
+            const profileRes = await fetch(`${API_URL}/profile/${studentId}`);
+            const profile = await profileRes.json();
+            keywords = [...(profile.skills || []), ...(profile.goals || [])];
+          } catch {
+            keywords = ["internship", "job", "scholarship"];
+          }
+        }
+        
+        // Use Scout Agent for discovery
+        const scoutRes = await fetch(`${API_URL}/api/agent/scout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            keywords: keywords.length > 0 ? keywords : ["internship", "job"],
+            search_type: "all"
+          })
+        });
+        const scoutData = await scoutRes.json();
+        
+        if (scoutData.opportunities && scoutData.opportunities.length > 0) {
+          // Parse with Analyzer Agent
+          const analyzeRes = await fetch(`${API_URL}/api/agent/analyzer`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              scout_results: scoutData.opportunities
+            })
+          });
+          const analyzeData = await analyzeRes.json();
+          
+          setOpportunities(scoutData.opportunities.map((o: any, i: number) => ({
+            id: o.id || (o.source === 'database' ? o.id : 200 + i),
+            title: o.title || "Opportunity",
+            organization: o.title?.split(" at ")[1] || o.organization || "Company",
+            type: analyzeData.job_type || o.type || "Internship",
+            url: o.link || o.url || "#",
+            description: o.snippet || o.description || "",
+            requirements: analyzeData.skills || o.requirements || [],
+            location: analyzeData.location || o.location,
+            deadline: analyzeData.deadline || o.deadline,
+            source: o.source
+          })));
+        }
       } catch (error) {
         console.error("Failed to fetch opportunities:", error);
       } finally {
@@ -58,13 +104,32 @@ export default function ExplorePage() {
   }, [router]);
 
   const filteredOpps = opportunities.filter(opp => {
-    const matchesSearch = opp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      opp.organization.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = opp.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      opp.organization?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = selectedType === "All" || opp.type === selectedType;
     return matchesSearch && matchesType;
   });
 
-  const toggleSaved = (id: number) => {
+  const toggleSaved = async (id: number) => {
+    const studentId = localStorage.getItem("student_id");
+    const isSaved = savedIds.includes(id);
+    
+    if (studentId) {
+      try {
+        await fetch(`${API_URL}/api/saved`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            student_id: parseInt(studentId),
+            opportunity_id: id,
+            action: isSaved ? "unsave" : "save"
+          })
+        });
+      } catch (error) {
+        console.error("Failed to save/unsave:", error);
+      }
+    }
+    
     setSavedIds(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );

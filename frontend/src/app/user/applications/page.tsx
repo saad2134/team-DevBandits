@@ -5,6 +5,12 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { API_URL } from "@/lib/utils";
 import { 
   Clock, MapPin, Building, ExternalLink, FileText, CheckCircle, 
@@ -155,6 +161,29 @@ export default function ApplicationsPage() {
                     <FileText className="w-4 h-4 mr-1" />
                     View Audit
                   </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" variant="outline">
+                        Status
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      {["applied", "shortlisted", "interview", "rejected", "offered"].map((status) => (
+                        <DropdownMenuItem
+                          key={status}
+                          onClick={() => {
+                            fetch(`${API_URL}/applications/${app.id}`, {
+                              method: "PUT",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ status })
+                            }).then(() => window.location.reload());
+                          }}
+                        >
+                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </CardContent>
             </Card>

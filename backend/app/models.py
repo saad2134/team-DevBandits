@@ -73,6 +73,7 @@ class Engagement(Base):
     student_id = Column(Integer, ForeignKey("students.id"), nullable=False)
     opportunity_id = Column(Integer, ForeignKey("opportunities.id"), nullable=False)
     action = Column(String, nullable=False)  # viewed, applied, saved, dismissed
+    status = Column(String, nullable=True)  # applied, shortlisted, rejected, offered
     created_at = Column(DateTime, default=datetime.utcnow)
     
     student = relationship("Student", back_populates="engagements")

@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { API_URL } from "@/lib/utils";
-import { GraduationCap, FileText, CheckCircle, XCircle, Lightbulb } from "lucide-react";
+import { GraduationCap, FileText, CheckCircle, XCircle, Lightbulb, ArrowLeft } from "lucide-react";
 
 interface AuditData {
   student_profile: {
@@ -52,16 +52,58 @@ export default function AuditPage() {
 
     const fetchAudit = async () => {
       try {
-        const res = await fetch(`${API_URL}/audit`, {
+        // Fetch opportunity details first
+        const oppRes = await fetch(`${API_URL}/opportunities/${opportunityId as string}`);
+        const opportunity = await oppRes.json();
+
+        const evaluateRes = await fetch(`${API_URL}/api/agent/auditor/evaluate`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             student_id: parseInt(studentId),
             opportunity_id: parseInt(opportunityId as string),
+            use_vectorized: true
           }),
         });
-        const data = await res.json();
-        setAuditData(data);
+        const evaluation = await evaluateRes.json();
+
+        const coverRes = await fetch(`${API_URL}/api/agent/auditor/ai-cover-letter`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            student_id: parseInt(studentId),
+            opportunity_id: parseInt(opportunityId as string),
+            use_ai: true
+          }),
+        });
+        const coverData = await coverRes.json();
+
+        setAuditData({
+          student_profile: {
+            id: parseInt(studentId),
+            name: evaluation.student_profile?.name || "Student",
+            cgpa: evaluation.student_profile?.cgpa || null,
+            year: evaluation.student_profile?.year || null,
+            branch: evaluation.student_profile?.branch || null,
+            skills: [],
+            goals: []
+          },
+          opportunity: {
+            id: parseInt(opportunityId as string),
+            title: opportunity.title || "Opportunity",
+            organization: opportunity.organization || "Organization",
+            type: opportunity.type || "Job",
+            description: opportunity.description || "",
+            requirements: opportunity.requirements || [],
+            deadline: opportunity.deadline || null,
+            url: opportunity.url
+          },
+          match_score: evaluation.score || 0,
+          matched_skills: evaluation.strengths || [],
+          missing_skills: evaluation.gaps || [],
+          suggestions: evaluation.recommendations || [],
+          cover_letter: coverData.cover_letter || ""
+        });
       } catch (error) {
         console.error("Failed to fetch audit:", error);
       } finally {
@@ -107,6 +149,10 @@ export default function AuditPage() {
 
   return (
     <div className="p-6 md:p-8">
+      <Button variant="ghost" onClick={() => router.back()} className="mb-4">
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back
+      </Button>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
           <Card>
@@ -204,7 +250,23 @@ export default function AuditPage() {
                 <Button onClick={copyCoverLetter}>
                   {copied ? "Copied!" : "Copy to Clipboard"}
                 </Button>
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild onClick={async () => {
+                  const studentId = localStorage.getItem("student_id");
+                  if (studentId) {
+                    try {
+                      await fetch(`${API_URL}/applications`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          student_id: parseInt(studentId),
+                          opportunity_id: parseInt(params.id as string)
+                        })
+                      });
+                    } catch (e) {
+                      console.error("Failed to track application:", e);
+                    }
+                  }
+                }}>
                   <a
                     href={auditData.opportunity.url}
                     target="_blank"
