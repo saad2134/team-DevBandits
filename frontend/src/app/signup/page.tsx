@@ -157,7 +157,7 @@ export default function SignupPage() {
             <Button
               type="button"
               variant="outline"
-              className="w-full mt-2"
+              className="w-full"
               onClick={() => {
                 setFormData({
                   email: "demo@example.com",

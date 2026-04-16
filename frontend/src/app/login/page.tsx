@@ -78,7 +78,7 @@ export default function LoginPage() {
             <Button
               type="button"
               variant="outline"
-              className="w-full mt-2"
+              className="w-full"
               onClick={() => {
                 setEmail("demo@example.com");
                 setPassword("demo123");
