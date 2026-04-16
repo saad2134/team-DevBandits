@@ -120,15 +120,15 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
+    <div className="min-h-screen bg-background">
+      <header className="bg-card border-b border-border">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <GraduationCap className="h-6 w-6 text-primary" />
             <span className="text-xl font-bold">{siteConfig.name}</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">Welcome, {profile?.name}</span>
+            <span className="text-sm text-muted-foreground">Welcome, {profile?.name}</span>
             <Button
               variant="ghost"
               onClick={() => {
@@ -169,7 +169,7 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-sm text-gray-500">Skills</p>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {profile?.skills?.length > 0 ? (
+                    {profile?.skills?.length ? (
                       profile.skills.map((skill, i) => (
                         <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
                           {skill}

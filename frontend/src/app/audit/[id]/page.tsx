@@ -27,6 +27,7 @@ interface AuditData {
     description: string;
     requirements: string[];
     deadline: string | null;
+    url?: string;
   };
   match_score: number;
   matched_skills: string[];
@@ -108,8 +109,8 @@ export default function AuditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
+    <div className="min-h-screen bg-background">
+      <header className="bg-card border-b border-border">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <GraduationCap className="h-6 w-6 text-primary" />

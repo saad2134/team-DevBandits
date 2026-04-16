@@ -63,7 +63,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-10">
+    <div className="min-h-screen flex items-center justify-center bg-background py-10">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Create Your Profile</CardTitle>
