@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { API_URL } from "@/lib/utils";
+import { Mail, Lock } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,7 +31,12 @@ export default function LoginPage() {
       if (data.success) {
         localStorage.setItem("student_id", data.user.id);
         localStorage.setItem("student_token", data.token);
-        router.push("/user/dashboard");
+        
+        if (data.user.onboarding_completed) {
+          router.push("/user/dashboard");
+        } else {
+          router.push("/onboarding");
+        }
       } else {
         setError(data.message);
       }
@@ -55,22 +62,32 @@ export default function LoginPage() {
               </div>
             )}
             <div>
-              <Input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <Label>Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="email"
+                  placeholder="your@email.com"
+                  className="pl-10"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
             </div>
             <div>
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <Label>Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="password"
+                  placeholder="Your password"
+                  className="pl-10"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Signing in..." : "Sign In"}

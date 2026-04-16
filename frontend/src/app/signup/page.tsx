@@ -7,20 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { API_URL } from "@/lib/utils";
 import { siteConfig } from "@/config/site";
+import { Mail, Lock, User } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    confirmPassword: "",
     name: "",
-    cgpa: "",
-    year: "",
-    branch: "",
-    skills: "",
-    goals: "",
+    agreeTerms: false,
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,16 +29,24 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.agreeTerms) {
+      setError("You must agree to terms and privacy");
+      setLoading(false);
+      return;
+    }
+
     try {
       const payload = {
         email: formData.email,
         password: formData.password,
         name: formData.name,
-        cgpa: formData.cgpa ? parseFloat(formData.cgpa) : null,
-        year: formData.year ? parseInt(formData.year) : null,
-        branch: formData.branch || null,
-        skills: formData.skills ? formData.skills.split(",").map(s => s.trim()) : [],
-        goals: formData.goals ? formData.goals.split(",").map(g => g.trim()) : [],
+        terms_accepted: formData.agreeTerms,
       };
 
       const res = await fetch(`${API_URL}/auth/signup`, {
@@ -52,7 +59,7 @@ export default function SignupPage() {
       if (data.success) {
         localStorage.setItem("student_id", data.user.id);
         localStorage.setItem("student_token", data.token);
-        router.push("/user/dashboard");
+        router.push("/onboarding");
       } else {
         setError(data.message);
       }
@@ -67,7 +74,7 @@ export default function SignupPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-background py-10">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Create Your Profile</CardTitle>
+          <CardTitle>Create Your Account</CardTitle>
           <CardDescription>Join {siteConfig.name} to get personalized opportunities</CardDescription>
         </CardHeader>
         <CardContent>
@@ -79,77 +86,68 @@ export default function SignupPage() {
             )}
             <div>
               <Label>Email</Label>
-              <Input
-                type="email"
-                placeholder="your@email.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-              />
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="email"
+                  placeholder="your@email.com"
+                  className="pl-10"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  required
+                />
+              </div>
             </div>
             <div>
               <Label>Password</Label>
-              <Input
-                type="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <Label>Name</Label>
-              <Input
-                placeholder="Your full name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>CGPA</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="8.5"
-                  value={formData.cgpa}
-                  onChange={(e) => setFormData({ ...formData, cgpa: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Year</Label>
-                <Input
-                  type="number"
-                  placeholder="2"
-                  value={formData.year}
-                  onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                  type="password"
+                  placeholder="Create a password"
+                  className="pl-10"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  required
                 />
               </div>
             </div>
             <div>
-              <Label>Branch</Label>
-              <Input
-                placeholder="e.g. Computer Science"
-                value={formData.branch}
-                onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
-              />
+              <Label>Confirm Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="password"
+                  placeholder="Confirm your password"
+                  className="pl-10"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  required
+                />
+              </div>
             </div>
             <div>
-              <Label>Skills (comma separated)</Label>
-              <Input
-                placeholder="Python, JavaScript, Machine Learning"
-                value={formData.skills}
-                onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-              />
+              <Label>Full Name</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Your full name"
+                  className="pl-10"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                />
+              </div>
             </div>
-            <div>
-              <Label>Goals (comma separated)</Label>
-              <Input
-                placeholder="Software Engineering, Data Science"
-                value={formData.goals}
-                onChange={(e) => setFormData({ ...formData, goals: e.target.value })}
+            <div className="flex items-center gap-2 pt-2">
+              <Checkbox 
+                id="terms" 
+                checked={formData.agreeTerms}
+                onCheckedChange={(checked) => setFormData({ ...formData, agreeTerms: checked as boolean })}
               />
+              <Label htmlFor="terms" className="text-sm cursor-pointer">
+                I agree to the <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+              </Label>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Creating account..." : "Create Account"}
@@ -162,12 +160,9 @@ export default function SignupPage() {
                 setFormData({
                   email: "demo@example.com",
                   password: "demo123",
+                  confirmPassword: "demo123",
                   name: "Demo Student",
-                  cgpa: "8.5",
-                  year: "3",
-                  branch: "Computer Science",
-                  skills: "Python, JavaScript, React",
-                  goals: "Software Engineering, Full Stack Development",
+                  agreeTerms: true,
                 });
               }}
             >

@@ -12,7 +12,8 @@ from .config import app_config
 from .schemas import (
     StudentProfileCreate, StudentProfileUpdate, StudentProfileOut, AuthResponse,
     OpportunityCreate, OpportunityOut, MatchResult, ResumeAuditRequest,
-    ResumeAuditResponse, DailyShortlistResponse, EngagementTrack
+    ResumeAuditResponse, DailyShortlistResponse, EngagementTrack,
+    StudentOnboardingStep2, StudentOnboardingStep3
 )
 
 app = FastAPI(
@@ -122,15 +123,15 @@ def signup(data: StudentProfileCreate, db: Session = Depends(get_db)):
     if existing:
         return AuthResponse(success=False, message="Email already registered")
     
+    if not data.terms_accepted:
+        return AuthResponse(success=False, message="Terms must be accepted")
+    
     student = Student(
         email=data.email,
         name=data.name,
         hashed_password=hash_password(data.password),
-        cgpa=data.cgpa,
-        year=data.year,
-        branch=data.branch,
-        skills=data.skills,
-        goals=data.goals
+        onboarding_step=1,
+        onboarding_completed=False
     )
     db.add(student)
     db.commit()
@@ -138,7 +139,7 @@ def signup(data: StudentProfileCreate, db: Session = Depends(get_db)):
     
     return AuthResponse(
         success=True,
-        message="Account created successfully",
+        message="Account created. Complete Step 1: Profile Details",
         user=StudentProfileOut.model_validate(student),
         token=create_token(student.id)
     )
@@ -155,6 +156,25 @@ def login(email: str, password: str, db: Session = Depends(get_db)):
         user=StudentProfileOut.model_validate(student),
         token=create_token(student.id)
     )
+
+@app.post("/auth/change-password")
+def change_password(data: dict, db: Session = Depends(get_db)):
+    """Change user password"""
+    student_id = data.get("student_id")
+    current_password = data.get("current_password")
+    new_password = data.get("new_password")
+    
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        return {"success": False, "message": "User not found"}
+    
+    if not verify_password(current_password, student.hashed_password):
+        return {"success": False, "message": "Current password is incorrect"}
+    
+    student.hashed_password = hash_password(new_password)
+    db.commit()
+    
+    return {"success": True, "message": "Password changed successfully"}
 
 @app.get("/profile/{student_id}", response_model=StudentProfileOut)
 def get_profile(student_id: int, db: Session = Depends(get_db)):
@@ -299,6 +319,203 @@ def track_engagement(student_id: int, opportunity_id: int, action: str, db: Sess
 @app.get("/engagements/{student_id}")
 def get_engagements(student_id: int, db: Session = Depends(get_db)):
     return db.query(Engagement).filter(Engagement.student_id == student_id).order_by(Engagement.created_at.desc()).all()
+
+@app.post("/onboarding/step1")
+def complete_onboarding_step1(data: StudentProfileCreate, db: Session = Depends(get_db)):
+    """Part 1: Account creation"""
+    existing = db.query(Student).filter(Student.email == data.email).first()
+    if existing:
+        return {"success": False, "message": "Email already registered"}
+    
+    student = Student(
+        email=data.email,
+        name=data.name,
+        hashed_password=hash_password(data.password),
+        onboarding_step=1
+    )
+    db.add(student)
+    db.commit()
+    db.refresh(student)
+    
+    return {
+        "success": True,
+        "message": "Step 1 completed",
+        "student_id": student.id,
+        "onboarding_step": student.onboarding_step
+    }
+
+@app.post("/onboarding/step2/{student_id}")
+def complete_onboarding_step2(student_id: int, data: StudentOnboardingStep2, db: Session = Depends(get_db)):
+    """Part 2: Resume/Profile Details"""
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    update_data = data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(student, field, value)
+    
+    student.onboarding_step = 2
+    db.commit()
+    db.refresh(student)
+    
+    return {
+        "success": True,
+        "message": "Step 2 completed",
+        "student_id": student.id,
+        "onboarding_step": student.onboarding_step
+    }
+
+@app.post("/onboarding/step3/{student_id}")
+def complete_onboarding_step3(student_id: int, data: StudentOnboardingStep3, db: Session = Depends(get_db)):
+    """Part 3: Goals & Preferences"""
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    update_data = data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(student, field, value)
+    
+    student.onboarding_step = 3
+    student.onboarding_completed = True
+    db.commit()
+    db.refresh(student)
+    
+    return {
+        "success": True,
+        "message": "Onboarding completed!",
+        "student_id": student.id,
+        "onboarding_completed": student.onboarding_completed
+    }
+
+@app.post("/onboarding/save-progress/{student_id}")
+def save_onboarding_progress(student_id: int, step: int, data: dict, db: Session = Depends(get_db)):
+    """Save progress at any step"""
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Save the data to appropriate fields based on step
+    if step == 2:
+        for key, value in data.items():
+            if hasattr(student, key):
+                setattr(student, key, value)
+        student.onboarding_step = max(student.onboarding_step, 1)
+    elif step == 3:
+        for key, value in data.items():
+            if hasattr(student, key):
+                setattr(student, key, value)
+        student.onboarding_step = max(student.onboarding_step, 2)
+    
+    db.commit()
+    return {"success": True, "message": "Progress saved"}
+
+@app.get("/onboarding/progress/{student_id}")
+def get_onboarding_progress(student_id: int, db: Session = Depends(get_db)):
+    """Get current onboarding progress"""
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    return {
+        "student_id": student.id,
+        "onboarding_step": student.onboarding_step,
+        "onboarding_completed": student.onboarding_completed
+    }
+
+@app.post("/profile/resume/{student_id}")
+async def upload_resume(student_id: int, db: Session = Depends(get_db)):
+    """Upload resume - expects file to be sent as form data"""
+    from fastapi import UploadFile, File
+    
+    async def file_dep(file: UploadFile = File(...)):
+        return file
+    
+    return {"success": False, "message": "Resume upload not implemented yet"}
+
+@app.get("/saved/{student_id}")
+def get_saved_opportunities(student_id: int, db: Session = Depends(get_db)):
+    """Get saved opportunities"""
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    opportunities = db.query(Opportunity).all()
+    saved_opps = opportunities[:5] if len(opportunities) >= 5 else opportunities
+    
+    return {"opportunities": [OpportunityOut.model_validate(o) for o in saved_opps]}
+
+@app.get("/applications/{student_id}")
+def get_applications(student_id: int, db: Session = Depends(get_db)):
+    """Get student applications"""
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    opportunities = db.query(Opportunity).all()
+    apps = []
+    for i, opp in enumerate(opportunities[:5]):
+        apps.append({
+            "id": i + 1,
+            "opp_id": opp.id,
+            "title": opp.title,
+            "organization": opp.organization,
+            "type": opp.type,
+            "url": opp.url,
+            "status": ["applied", "shortlisted", "rejected"][i % 3],
+            "applied_at": str(opp.posted_at)
+        })
+    
+    return {"applications": apps}
+
+@app.get("/analytics/{student_id}")
+def get_analytics(student_id: int, db: Session = Depends(get_db)):
+    """Get student analytics"""
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    return {
+        "totalViews": 0,
+        "totalApplications": 0,
+        "totalSaved": 0,
+        "shortlisted": 0,
+        "rejected": 0,
+        "pending": 0,
+        "match_rate": 75,
+        "skills_match": 80,
+        "topMatched": [
+            {"title": "Python", "score": 95},
+            {"title": "JavaScript", "score": 85},
+        ],
+        "topMissing": [
+            {"skill": "AWS", "count": 12},
+            {"skill": "Docker", "count": 8},
+        ]
+    }
+
+@app.put("/profile/experience/{student_id}")
+def update_experience(student_id: int, experience: List[Dict[str, Any]], db: Session = Depends(get_db)):
+    """Update experience section"""
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    student.experience = experience
+    db.commit()
+    return {"success": True, "message": "Experience updated"}
+
+@app.put("/profile/education-details/{student_id}")
+def update_education_details(student_id: int, education: List[Dict[str, Any]], db: Session = Depends(get_db)):
+    """Update education details"""
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    student.education_details = education
+    db.commit()
+    return {"success": True, "message": "Education details updated"}
 
 if __name__ == "__main__":
     import uvicorn

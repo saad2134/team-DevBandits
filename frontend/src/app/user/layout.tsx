@@ -62,7 +62,6 @@ interface StudentProfile {
 
 const appNavItems = [
   {
-   
     items: [
       { title: "Dashboard", url: "/user/dashboard", icon: LayoutDashboard },
     ],
@@ -179,9 +178,9 @@ function UserSidebar({ children }: { children: React.ReactNode }) {
           <div className="space-y-2">
             <div className="flex gap-2">
               <Link
-                href="/user/profile/edit"
+                href="/user/profile"
                 className={`flex-1 flex items-center gap-3 p-2 border border-foreground/10 rounded-lg transition-colors ${
-                  pathname === "/user/profile/edit"
+                  pathname === "/user/profile"
                     ? "bg-primary/50 dark:bg-primary/20 border border-primary dark:border-primary"
                     : "bg-muted/50 hover:bg-muted"
                 }`}
