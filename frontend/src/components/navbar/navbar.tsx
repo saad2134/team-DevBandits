@@ -25,11 +25,17 @@ interface NavbarProps {
   navItems?: NavItem[];
   showModeToggle?: boolean;
   isLandingPage?: boolean;
+  isExternalPage?: boolean;
 }
 
 const landingPageNavItems = [
-  { name: "Features", link: "#features" },
-  { name: "How It Works", link: "#how-it-works" },
+  { name: "Features", link: "/#features" },
+  { name: "How It Works", link: "/#how-it-works" },
+];
+
+const externalPageNavItems = [
+  { name: "Features", link: "/#features" },
+  { name: "How It Works", link: "/#how-it-works" },
 ];
 
 const scrollToSection = (sectionId: string) => {
@@ -43,6 +49,7 @@ export default function NavbarComponent({
   navItems,
   showModeToggle = true,
   isLandingPage = false,
+  isExternalPage = false,
 }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
@@ -71,14 +78,14 @@ export default function NavbarComponent({
 
   const router = useRouter();
 
-  const items = isLandingPage ? landingPageNavItems : navItems || [];
+  const items = isLandingPage ? landingPageNavItems : isExternalPage ? externalPageNavItems : navItems || [];
 
   const handleNavClick = (item: NavItem) => {
-    if (isLandingPage && item.link.startsWith("#")) {
+    if ((isLandingPage || isExternalPage) && item.link.startsWith("/#")) {
+      router.push(item.link);
+    } else if (isLandingPage && item.link.startsWith("#")) {
       const sectionId = item.link.replace("#", "");
       scrollToSection(sectionId);
-    } else if (isLandingPage && !item.link.startsWith("#")) {
-      router.push(item.link);
     } else {
       router.push(item.link);
     }

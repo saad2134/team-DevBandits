@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { siteConfig } from "@/config/site";
+import NavbarComponent from "@/components/navbar/navbar";
 import FooterSection from "@/components/footer/footer";
 
 export const metadata: Metadata = {
@@ -10,23 +9,11 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b border-foreground/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="font-bold text-xl">{siteConfig.name}</span>
-            </Link>
-            <div className="flex items-center gap-4">
-              <Link href="/login" className="text-sm hover:underline">Login</Link>
-              <Link href="/signup" className="text-sm bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90">Signup</Link>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background text-foreground">
+      <NavbarComponent isExternalPage={true} />
 
-      <main className="flex-1">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <main className="pt-32 pb-16">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold mb-4">Privacy Policy</h1>
           <p className="text-sm text-muted-foreground mb-8">Last updated: April 17, 2026</p>
 
