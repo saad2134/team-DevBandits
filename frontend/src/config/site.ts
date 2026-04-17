@@ -9,7 +9,7 @@ export const siteConfig = {
     "An AI-powered platform that matches students with tailored opportunities and generates personalized cover letters.",
   links: {
     twitter: "",
-    github: "",
+    github: "https://github.com/saad2134/team-DevBandits",
     email: "",
     phone: "",
   },

@@ -4,7 +4,8 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
-import { siteConfig } from "@/config/site";
+import { Github } from "lucide-react";
+import { siteConfig, SOCIAL_LINKS } from "@/config/site";
 
 function Footer({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -73,25 +74,22 @@ export default function FooterSection({
         { text: "Home", href: "/" },
         { text: "Login", href: "/login" },
         { text: "Signup", href: "/signup" },
-        { text: "Dashboard", href: "/dashboard" },
-        { text: "Opportunities", href: "/opportunities" },
-        { text: "Resume Audit", href: "/audit/1" },
       ],
     },
     {
       appName: "Resources",
       links: [
-        { text: "Help Center", href: "#" },
-        { text: "Blog", href: "#" },
-        { text: "Careers", href: "#" },
+        { text: "Help Center", href: "/help-center" },
+        { text: "Blog", href: "/blog" },
+        { text: "Careers", href: "/careers" },
       ],
     },
     {
       appName: "Legal",
       links: [
-        { text: "Privacy Policy", href: "#" },
-        { text: "Terms of Service", href: "#" },
-        { text: "Cookie Policy", href: "#" },
+        { text: "Privacy Policy", href: "/policy" },
+        { text: "Terms of Service", href: "/terms" },
+        { text: "Cookie Policy", href: "/cookies" },
       ],
     },
   ],
@@ -114,6 +112,17 @@ export default function FooterSection({
                 <p className="text-muted-foreground text-sm max-w-md">
                   {siteConfig.description}
                 </p>
+                {SOCIAL_LINKS.github && (
+                  <Link
+                    href={SOCIAL_LINKS.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-muted-foreground text-sm hover:text-foreground transition-colors"
+                  >
+                    <Github className="w-4 h-4" />
+                    {/* <span>GitHub</span> */}
+                  </Link>
+                )}
               </div>
             </FooterColumn>
 
