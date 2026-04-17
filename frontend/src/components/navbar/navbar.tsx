@@ -4,6 +4,7 @@ import { siteConfig } from "@/config/site";
 import Link from "next/link";
 import { useState } from "react";
 import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import Image from "next/image";
@@ -22,20 +23,44 @@ interface NavItem {
 interface NavbarProps {
   navItems?: NavItem[];
   showModeToggle?: boolean;
+  isLandingPage?: boolean;
 }
 
+const landingPageNavItems = [
+  { name: "Features", link: "#features" },
+  { name: "How It Works", link: "#how-it-works" },
+];
+
+const scrollToSection = (sectionId: string) => {
+  const element = document.getElementById(sectionId);
+  if (element) {
+    element.scrollIntoView({ behavior: "smooth" });
+  }
+};
+
 export default function NavbarComponent({
-  navItems = [
-    { name: "Platform", link: "/dashboard" },
-    { name: "Pathways", link: "/opportunities" },
-    { name: "Intelligence", link: "#" },
-    { name: "Enterprise", link: "#" },
-  ],
+  navItems,
   showModeToggle = true,
+  isLandingPage = false,
 }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
   const { setTheme, theme } = useTheme();
+  const router = useRouter();
+
+  const items = isLandingPage ? landingPageNavItems : navItems || [];
+
+  const handleNavClick = (item: NavItem) => {
+    if (isLandingPage && item.link.startsWith("#")) {
+      const sectionId = item.link.replace("#", "");
+      scrollToSection(sectionId);
+    } else if (isLandingPage && !item.link.startsWith("#")) {
+      router.push(item.link);
+    } else {
+      router.push(item.link);
+    }
+    setIsMobileMenuOpen(false);
+  };
 
   return (
     <div className="fixed inset-x-0 top-4 z-50 w-full px-4">
@@ -46,10 +71,14 @@ export default function NavbarComponent({
         </Link>
 
         <div className="hidden flex-row items-center justify-center gap-2 text-sm font-medium text-foreground/70 hover:text-foreground lg:flex">
-          {navItems.map((item, idx) => (
-            <Link key={`link-${idx}`} href={item.link} className="px-4 py-2 text-foreground hover:text-primary transition-colors">
+          {items.map((item, idx) => (
+            <button
+              key={`link-${idx}`}
+              onClick={() => handleNavClick(item)}
+              className="px-4 py-2 text-foreground hover:text-primary transition-colors"
+            >
               {item.name}
-            </Link>
+            </button>
           ))}
         </div>
 
@@ -93,15 +122,14 @@ export default function NavbarComponent({
 
         {isMobileMenuOpen && (
           <div className="absolute inset-x-0 top-16 z-50 flex w-full flex-col items-start justify-start gap-4 bg-background/95 backdrop-blur-xl px-4 py-8 border border-border shadow-2xl">
-            {navItems.map((item, idx) => (
-              <Link
+            {items.map((item, idx) => (
+              <button
                 key={`mobile-link-${idx}`}
-                href={item.link}
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => handleNavClick(item)}
                 className="text-foreground hover:text-primary transition-colors"
               >
                 {item.name}
-              </Link>
+              </button>
             ))}
             <div className="flex w-full flex-col gap-4 mt-4">
               <Link
