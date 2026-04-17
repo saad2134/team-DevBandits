@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
@@ -15,9 +16,65 @@ import {
   Code,
   Clock,
   Star,
+  Bookmark,
 } from "lucide-react";
 
+import { useSaved } from "@/context/SavedContext";
+
+interface PreviewOpportunity {
+  id: number;
+  title: string;
+  organization: string;
+  matchScore: number;
+  type: "perfect" | "high" | "found";
+  deadline: string;
+}
+
+const previewOpportunities: PreviewOpportunity[] = [
+  {
+    id: 1,
+    title: "Merit Scholarship",
+    organization: "Global STEM Council",
+    matchScore: 94,
+    type: "perfect",
+    deadline: "94% Fit Score"
+  },
+  {
+    id: 2,
+    title: "Global Hackathon",
+    organization: "AI for Social Good",
+    matchScore: 88,
+    type: "high",
+    deadline: "88% Fit Score"
+  },
+  {
+    id: 3,
+    title: "Product Internship",
+    organization: "TechCorp Industries",
+    matchScore: 72,
+    type: "found",
+    deadline: "72% Fit Score"
+  }
+];
+
+const filters = [
+  { id: "all", label: "All" },
+  { id: "perfect", label: "Perfect Match" },
+  { id: "high", label: "High Priority" },
+  { id: "found", label: "Recently Found" },
+];
+
 export default function HomePage() {
+  const [activeFilter, setActiveFilter] = useState<string>("all");
+  const { savedIds, toggleSave, isSaved } = useSaved();
+
+  const filteredOpportunities = activeFilter === "all"
+    ? previewOpportunities
+    : previewOpportunities.filter(opp => opp.type === activeFilter);
+
+  const handleToggleSave = (id: number) => {
+    toggleSave(id);
+  };
   return (
     <div className="min-h-screen bg-background text-foreground">
       <NavbarComponent />
@@ -78,48 +135,46 @@ export default function HomePage() {
                 </div>
               </div>
 
+              <div className="flex flex-wrap gap-2 mb-6 relative z-10">
+                {filters.map((filter) => (
+                  <button
+                    key={filter.id}
+                    onClick={() => setActiveFilter(filter.id)}
+                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                      activeFilter === filter.id
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
-                {/* Match 1 */}
-                <div className="p-4 rounded-xl bg-muted/50 border border-border/10">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-secondary uppercase tracking-wider">Perfect Match</span>
-                    <Star className="w-4 h-4 text-secondary" style={{ fill: "currentColor" }} />
+                {filteredOpportunities.map((opp) => (
+                  <div key={opp.id} className="p-4 rounded-xl bg-muted/50 border border-border/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-bold text-secondary uppercase tracking-wider">
+                        {opp.type === "perfect" && "Perfect Match"}
+                        {opp.type === "high" && "High Priority"}
+                        {opp.type === "found" && "Found 2h Ago"}
+                      </span>
+                      <button 
+                        onClick={() => handleToggleSave(opp.id)}
+                        className={`${isSaved(opp.id) ? "text-secondary" : "text-muted-foreground hover:text-primary"}`}
+                      >
+                        <Star className={`w-4 h-4 ${isSaved(opp.id) ? "fill-current" : ""}`} />
+                      </button>
+                    </div>
+                    <p className="text-sm font-bold mb-1">{opp.title}</p>
+                    <p className="text-xs text-muted-foreground mb-3">{opp.organization}</p>
+                    <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-primary to-secondary" style={{ width: `${opp.matchScore}%` }} />
+                    </div>
+                    <p className="text-[10px] mt-2 text-primary font-bold">{opp.deadline}</p>
                   </div>
-                  <p className="text-sm font-bold mb-1">Merit Scholarship</p>
-                  <p className="text-xs text-muted-foreground mb-3">Global STEM Council</p>
-                  <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
-                    <div className="h-full w-[94%] bg-gradient-to-r from-primary to-secondary" />
-                  </div>
-                  <p className="text-[10px] mt-2 text-primary font-bold">94% Fit Score</p>
-                </div>
-
-                {/* Match 2 */}
-                <div className="p-4 rounded-xl bg-muted/50 border border-border/10">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-primary uppercase tracking-wider">High Priority</span>
-                    <Code className="w-4 h-4 text-primary" />
-                  </div>
-                  <p className="text-sm font-bold mb-1">Global Hackathon</p>
-                  <p className="text-xs text-muted-foreground mb-3">AI for Social Good</p>
-                  <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
-                    <div className="h-full w-[88%] bg-gradient-to-r from-primary to-secondary" />
-                  </div>
-                  <p className="text-[10px] mt-2 text-primary font-bold">88% Fit Score</p>
-                </div>
-
-                {/* Match 3 */}
-                <div className="p-4 rounded-xl bg-muted/50 border border-border/10">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Found 2h Ago</span>
-                    <Clock className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                  <p className="text-sm font-bold mb-1">Product Internship</p>
-                  <p className="text-xs text-muted-foreground mb-3">TechCorp Industries</p>
-                  <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
-                    <div className="h-full w-[72%] bg-gradient-to-r from-primary to-secondary" />
-                  </div>
-                  <p className="text-[10px] mt-2 text-primary font-bold">72% Fit Score</p>
-                </div>
+                ))}
               </div>
             </div>
 

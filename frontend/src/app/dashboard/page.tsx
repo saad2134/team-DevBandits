@@ -11,6 +11,9 @@ import {
   CheckCircle, Sparkles, Bookmark, X, School, Terminal
 } from "lucide-react";
 
+import { useSaved } from "@/context/SavedContext";
+import { sampleOpportunities, MatchResult } from "@/data/opportunities";
+
 interface StudentProfile {
   id: number;
   name: string;
@@ -21,92 +24,6 @@ interface StudentProfile {
   skills: string[];
   goals: string[];
 }
-
-interface Opportunity {
-  id: number;
-  title: string;
-  organization: string;
-  type: string;
-  url: string;
-  description: string;
-  requirements: string[];
-  deadline: string | null;
-  location: string | null;
-}
-
-interface MatchResult {
-  opportunity: Opportunity;
-  match_score: number;
-  missing_skills: string[];
-  matched_skills: string[];
-}
-
-const sampleOpportunities: MatchResult[] = [
-  {
-    opportunity: {
-      id: 1,
-      title: "Product Design Internship",
-      organization: "Lumina Systems",
-      type: "internship",
-      url: "https://example.com",
-      description: "Join our product design team to work on cutting-edge SaaS products.",
-      requirements: ["Figma", "UI/UX", "Prototyping"],
-      deadline: "Oct 24, 2024",
-      location: "Remote"
-    },
-    match_score: 95,
-    matched_skills: ["Figma", "UI Design"],
-    missing_skills: ["Motion Design"]
-  },
-  {
-    opportunity: {
-      id: 2,
-      title: "Web3 Security Hackathon",
-      organization: "EtherShield Labs",
-      type: "hackathon",
-      url: "https://example.com",
-      description: "Build the future of decentralized security solutions.",
-      requirements: ["Solidity", "Blockchain", "Security"],
-      deadline: "In 3 days",
-      location: "Virtual"
-    },
-    match_score: 88,
-    matched_skills: ["Security", "Blockchain"],
-    missing_skills: ["Smart Contracts"]
-  },
-  {
-    opportunity: {
-      id: 3,
-      title: "Women in Tech Scholarship",
-      organization: "Stellar Foundation",
-      type: "scholarship",
-      url: "https://example.com",
-      description: "Supporting the next generation of women in technology.",
-      requirements: ["Academic Excellence", "Leadership"],
-      deadline: "Nov 15, 2024",
-      location: "Global"
-    },
-    match_score: 92,
-    matched_skills: ["Leadership", "Communication"],
-    missing_skills: []
-  },
-  {
-    opportunity: {
-      id: 4,
-      title: "Data Science Fellowship",
-      organization: "DataMind AI",
-      type: "research",
-      url: "https://example.com",
-      description: "Research position focused on machine learning and AI.",
-      requirements: ["Python", "ML", "Statistics"],
-      deadline: "Rolling",
-      location: "San Francisco"
-    },
-    match_score: 76,
-    matched_skills: ["Python", "Data Analysis"],
-    missing_skills: ["Deep Learning"]
-  }
-];
 
 function OpportunityModal({ result, onClose }: { result: MatchResult; onClose: () => void }) {
   return (
@@ -265,6 +182,12 @@ export default function DashboardPage() {
   const [opportunities, setOpportunities] = useState<MatchResult[]>(sampleOpportunities);
   const [loading, setLoading] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState<MatchResult | null>(null);
+  const { savedIds, toggleSave, isSaved } = useSaved();
+
+  const handleToggleSave = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleSave(id);
+  };
 
   useEffect(() => {
     const studentId = localStorage.getItem("student_id");
@@ -437,10 +360,14 @@ export default function DashboardPage() {
                     {getTypeIcon(result.opportunity.type)}
                   </div>
                   <button 
-                    className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-[#3525cd]/10 hover:text-[#3525cd] transition-colors"
-                    onClick={(e) => e.stopPropagation()}
+                    className={`h-10 w-10 rounded-full flex items-center justify-center transition-colors ${
+                      isSaved(result.opportunity.id)
+                        ? "text-[#8127cf]"
+                        : "text-slate-400 hover:bg-[#3525cd]/10 hover:text-[#3525cd]"
+                    }`}
+                    onClick={(e) => handleToggleSave(result.opportunity.id, e)}
                   >
-                    <Bookmark className="h-5 w-5" />
+                    <Bookmark className={`h-5 w-5 ${isSaved(result.opportunity.id) ? "fill-current" : ""}`} />
                   </button>
                 </div>
                 <h4 className="text-lg font-bold text-slate-900 mb-1 group-hover:text-[#3525cd] transition-colors">{result.opportunity.title}</h4>
