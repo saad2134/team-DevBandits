@@ -279,27 +279,18 @@ export default function HomePage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature, index) => (
               <div
                 key={index}
-                className={`group bg-muted p-8 rounded-2xl hover:bg-muted/80 transition-all duration-300 hover:scale-105 hover:-translate-y-2 ${
-                  feature.highlighted ? "relative overflow-hidden bg-gradient-to-br from-primary/10 to-secondary/10" : ""
-                }`}
+                className="group bg-muted p-6 rounded-2xl hover:scale-105 hover:bg-muted/80 transition-all duration-300"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                {feature.highlighted && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary opacity-5" />
-                )}
-                <div className="relative z-10">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-lg transition-transform duration-300 group-hover:scale-110 ${
-                    feature.color === "primary" ? "bg-primary text-white" : "bg-secondary text-white"
-                  }`}>
-                    <feature.icon className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-4">{feature.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed text-sm">{feature.description}</p>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 shadow-md bg-primary text-white transition-transform duration-300 group-hover:scale-110`}>
+                  <feature.icon className="w-6 h-6" />
                 </div>
+                <h3 className="text-lg font-bold mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground leading-relaxed text-sm">{feature.description}</p>
               </div>
             ))}
           </div>

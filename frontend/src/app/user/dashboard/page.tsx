@@ -431,7 +431,10 @@ export default function DashboardPage() {
               </div>
               <Button 
                 className="mt-auto w-full py-3 bg-muted text-foreground hover:bg-primary hover:text-primary-foreground rounded-xl text-sm font-bold transition-all"
-                onClick={() => handleEngage(result.opportunity.id, "viewed")}
+                onClick={() => {
+                  handleEngage(result.opportunity.id, "viewed");
+                  router.push(`/user/audit/${result.opportunity.id}`);
+                }}
               >
                 View Details
               </Button>
