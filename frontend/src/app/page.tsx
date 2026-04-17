@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import NavbarComponent from "@/components/navbar/navbar";
 import FooterSection from "@/components/footer/footer";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useState, useEffect } from "react";
 import {
   GraduationCap,
   Search,
@@ -23,6 +25,20 @@ import {
 } from "lucide-react";
 
 export default function HomePage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("student_token");
+    const id = localStorage.getItem("student_id");
+    setIsLoggedIn(!!token && !!id);
+    
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+    
+    return () => clearTimeout(timer);
+  }, []);
   return (
     <div className="min-h-screen bg-background text-foreground">
       <NavbarComponent />
@@ -48,16 +64,31 @@ export default function HomePage() {
               The platform that automatically finds internships, hackathons, and scholarships for you while you sleep.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/signup">
-                <button className="bg-primary text-primary-foreground px-8 py-4 rounded-xl text-lg font-bold flex items-center gap-2 hover:bg-primary/90 transition-all scale-95 active:scale-90">
-                  Get Started <ArrowRight className="w-5 h-5" />
-                </button>
-              </Link>
-              <Link href="/login">
-                <button className="bg-muted text-foreground border border-border/30 px-8 py-4 rounded-xl text-lg font-bold hover:bg-muted/80 transition-all scale-95 active:scale-90">
-                  View Demo
-                </button>
-              </Link>
+              {isLoading ? (
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <Skeleton className="h-14 w-48 rounded-xl" />
+                  <Skeleton className="h-14 w-36 rounded-xl" />
+                </div>
+              ) : isLoggedIn ? (
+                <Link href="/user/dashboard">
+                  <button className="bg-primary text-primary-foreground px-8 py-4 rounded-xl text-lg font-bold flex items-center gap-2 hover:bg-primary/90 transition-all scale-95 active:scale-90">
+                    Go to Dashboard <ArrowRight className="w-5 h-5" />
+                  </button>
+                </Link>
+              ) : (
+                <>
+                  <Link href="/signup">
+                    <button className="bg-primary text-primary-foreground px-8 py-4 rounded-xl text-lg font-bold flex items-center gap-2 hover:bg-primary/90 transition-all scale-95 active:scale-90">
+                      Get Started <ArrowRight className="w-5 h-5" />
+                    </button>
+                  </Link>
+                  <Link href="/login">
+                    <button className="bg-muted text-foreground border border-border/30 px-8 py-4 rounded-xl text-lg font-bold hover:bg-muted/80 transition-all scale-95 active:scale-90">
+                      View Demo
+                    </button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 
@@ -296,14 +327,29 @@ export default function HomePage() {
                 Join over 50,000 students and early-career professionals using AI to land their dream opportunities.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <Link href="/signup">
-                  <button className="bg-white text-primary px-10 py-5 rounded-2xl text-lg font-bold hover:bg-muted transition-all scale-95 active:scale-90 shadow-xl">
-                    Get Started for Free
-                  </button>
-                </Link>
-                <button className="bg-transparent text-white border border-white/30 px-10 py-5 rounded-2xl text-lg font-bold hover:bg-white/10 transition-all scale-95 active:scale-90">
-                  View Pricing
-                </button>
+                {isLoading ? (
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                    <Skeleton className="h-14 w-56 rounded-2xl" />
+                    <Skeleton className="h-14 w-36 rounded-2xl" />
+                  </div>
+                ) : isLoggedIn ? (
+                  <Link href="/user/dashboard">
+                    <button className="bg-white text-primary px-10 py-5 rounded-2xl text-lg font-bold hover:bg-muted transition-all scale-95 active:scale-90 shadow-xl">
+                      Go to Dashboard
+                    </button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/signup">
+                      <button className="bg-white text-primary px-10 py-5 rounded-2xl text-lg font-bold hover:bg-muted transition-all scale-95 active:scale-90 shadow-xl">
+                        Get Started for Free
+                      </button>
+                    </Link>
+                    <button className="bg-transparent text-white border border-white/30 px-10 py-5 rounded-2xl text-lg font-bold hover:bg-white/10 transition-all scale-95 active:scale-90">
+                      View Pricing
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>

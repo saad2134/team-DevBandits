@@ -99,11 +99,38 @@ interface MatchResult {
   matched_skills: string[];
 }
 
+interface Stats {
+  totalFound: number;
+  applicationsSent: number;
+  pending: number;
+  averageMatchScore: number;
+  todayAdded: number;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<StudentProfile | null>(null);
-  const [opportunities, setOpportunities] = useState<MatchResult[]>([]);
+  const [matchedOpportunities, setMatchedOpportunities] = useState<MatchResult[]>([]);
+  const [allOpportunities, setAllOpportunities] = useState<any[]>([]);
+  const [stats, setStats] = useState<Stats>({
+    totalFound: 0,
+    applicationsSent: 0,
+    pending: 0,
+    averageMatchScore: 0,
+    todayAdded: 0
+  });
   const [loading, setLoading] = useState(true);
+  const [scanning, setScanning] = useState(false);
+
+  const triggerScout = async () => {
+    setScanning(true);
+    try {
+      await fetch(`${API_URL}/api/agent/scout/trigger`, { method: "POST" });
+      setTimeout(() => window.location.reload(), 3000);
+    } finally {
+      setScanning(false);
+    }
+  };
 
   useEffect(() => {
     const studentId = localStorage.getItem("student_id");
@@ -118,9 +145,9 @@ export default function DashboardPage() {
         const profileData = await profileRes.json();
         setProfile(profileData);
 
-        // Use Matcher Agent for top matches
         const oppRes = await fetch(`${API_URL}/opportunities`);
         const allOpps = await oppRes.json();
+        setAllOpportunities(allOpps || []);
         
         if (allOpps && allOpps.length > 0) {
           const matchRes = await fetch(`${API_URL}/api/agent/matcher`, {
@@ -132,8 +159,38 @@ export default function DashboardPage() {
             })
           });
           const matchData = await matchRes.json();
-          setOpportunities(matchData.ranked_matches || []);
+          setMatchedOpportunities(matchData.ranked_matches || []);
+          
+          const totalOpps = allOpps.length;
+          const avgScore = matchData.ranked_matches?.length > 0
+            ? Math.round(matchData.ranked_matches.reduce((acc: number, m: MatchResult) => acc + m.match_score, 0) / matchData.ranked_matches.length)
+            : 0;
+          
+          setStats(prev => ({
+            ...prev,
+            totalFound: totalOpps,
+            averageMatchScore: avgScore
+          }));
         }
+        
+        const engageRes = await fetch(`${API_URL}/engagements/${studentId}`);
+        const engageData = await engageRes.json();
+        
+        if (engageData) {
+          const applied = engageData.filter((e: any) => e.action === "applied");
+          const pending = engageData.filter((e: any) => e.status === "pending");
+          
+          setStats(prev => ({
+            ...prev,
+            applicationsSent: applied.length,
+            pending: pending.length
+          }));
+        }
+        
+        const today = new Date().toISOString().split('T')[0];
+        const todayOpps = allOpps?.filter((o: any) => o.posted_at?.startsWith(today)) || [];
+        setStats(prev => ({ ...prev, todayAdded: todayOpps.length }));
+        
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
@@ -228,11 +285,11 @@ export default function DashboardPage() {
                 <p className="text-[10px] text-primary-foreground/80">{getDateTime()}</p>
               </div>
               <h2 className="text-2xl font-extrabold tracking-tighter">{profile?.name || 'User'}</h2>
-              <p className="text-primary-foreground/80 text-sm mt-1">Your scout agent found {opportunities.length} new opportunities</p>
+              <p className="text-primary-foreground/80 text-sm mt-1">Your matcher found {matchedOpportunities.length} matched opportunities</p>
             </div>
             <div className="relative z-10 flex gap-3 mt-4">
-              <Button className="bg-primary-foreground text-primary px-4 py-2 rounded-lg font-bold text-xs shadow-lg hover:scale-105 transition-transform">
-                Review Matches
+              <Button className="bg-primary-foreground text-primary px-4 py-2 rounded-lg font-bold text-xs shadow-lg hover:scale-105 transition-transform" onClick={triggerScout} disabled={scanning}>
+                {scanning ? "Scanning..." : "Scan Now"}
               </Button>
               <Button className="bg-white/20 backdrop-blur-md text-primary-foreground px-4 py-2 rounded-lg font-bold text-xs hover:bg-white/30 transition-all">
                 Daily Brief
@@ -318,21 +375,21 @@ export default function DashboardPage() {
         <div className="bg-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-border">
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Opportunities Found</p>
           <div className="flex items-baseline gap-2">
-            <span className="text-4xl font-black text-foreground tracking-tighter">{opportunities.length}</span>
-            <span className="text-xs font-bold text-green-600">+12 today</span>
+            <span className="text-4xl font-black text-foreground tracking-tighter">{stats.totalFound}</span>
+            <span className="text-xs font-bold text-green-600">+{stats.todayAdded} today</span>
           </div>
         </div>
         <div className="bg-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-border">
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Applications Sent</p>
           <div className="flex items-baseline gap-2">
-            <span className="text-4xl font-black text-foreground tracking-tighter">42</span>
-            <span className="text-xs font-bold text-muted-foreground/50">8 pending</span>
+            <span className="text-4xl font-black text-foreground tracking-tighter">{stats.applicationsSent}</span>
+            <span className="text-xs font-bold text-muted-foreground/50">{stats.pending} pending</span>
           </div>
         </div>
         <div className="bg-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow border-2 border-primary/20">
           <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Average Match Score</p>
           <div className="flex items-baseline gap-2">
-            <span className="text-4xl font-black text-primary tracking-tighter">85%</span>
+            <span className="text-4xl font-black text-primary tracking-tighter">{stats.averageMatchScore}%</span>
             <span className="text-xs font-bold text-primary/70">Top 10% user</span>
           </div>
         </div>
@@ -344,12 +401,12 @@ export default function DashboardPage() {
             <span className="text-[11px] font-black text-primary uppercase tracking-[0.2em]">Curated For You</span>
             <h3 className="text-2xl font-bold text-foreground tracking-tight">Recommended Opportunities</h3>
           </div>
-          <Button variant="ghost" className="text-primary text-sm font-bold flex items-center gap-1 hover:underline underline-offset-4">
+          <Button variant="ghost" className="text-primary text-sm font-bold flex items-center gap-1 hover:underline underline-offset-4" onClick={() => router.push("/user/matched")}>
             View All <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {opportunities.slice(0, 3).map((result) => (
+          {matchedOpportunities.slice(0, 3).map((result) => (
             <Card key={result.opportunity.id} className="bg-card rounded-2xl p-6 shadow-sm border border-foreground/10 hover:border-primary/20 transition-all flex flex-col group">
               <div className="flex justify-between items-start mb-6">
                 <div className="w-14 h-14 bg-muted rounded-xl flex items-center justify-center border border-border">
@@ -387,7 +444,7 @@ export default function DashboardPage() {
         <div className="flex justify-between items-center mb-8">
           <h3 className="text-xl font-bold text-foreground">Recent Scanned Opportunities</h3>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="p-2 bg-muted rounded-lg text-muted-foreground hover:bg-muted/80 transition-colors">
+            <Button variant="outline" size="sm" className="p-2 bg-muted rounded-lg text-muted-foreground hover:bg-muted/80 transition-colors" onClick={() => router.push("/user/explore")}>
               <Filter className="h-5 w-5" />
             </Button>
             <Button variant="outline" size="sm" className="p-2 bg-muted rounded-lg text-muted-foreground hover:bg-muted/80 transition-colors">
@@ -396,28 +453,22 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="space-y-2">
-          {opportunities.slice(0, 5).map((result, index) => (
-            <div key={result.opportunity.id} className="flex items-center justify-between p-4 hover:bg-muted rounded-2xl transition-colors cursor-pointer group border-t border-border first:border-t-0">
+          {allOpportunities.slice(0, 5).map((opp, index) => (
+            <div key={opp.id} className="flex items-center justify-between p-4 hover:bg-muted rounded-2xl transition-colors cursor-pointer group border-t border-border first:border-t-0" onClick={() => router.push(`/user/explore`)}>
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center font-bold text-muted-foreground">
-                  {result.opportunity.organization.charAt(0)}
+                  {(opp.organization || 'O').charAt(0)}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-foreground">{result.opportunity.title}</p>
-                  <p className="text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider">{result.opportunity.organization} • {result.opportunity.type}</p>
+                  <p className="text-sm font-bold text-foreground">{opp.title}</p>
+                  <p className="text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider">{opp.organization} • {opp.type}</p>
                 </div>
               </div>
               <div className="hidden md:flex flex-col items-end mr-12">
-                <p className="text-xs font-semibold text-foreground">Found {index + 1}h ago</p>
-                <p className="text-[10px] text-muted-foreground">via Platform</p>
+                <p className="text-xs font-semibold text-foreground">{new Date(opp.posted_at).toLocaleDateString()}</p>
+                <p className="text-[10px] text-muted-foreground">via Scout</p>
               </div>
               <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className="text-xs font-black text-primary">{result.match_score}%</p>
-                  <div className="w-16 bg-muted h-1 rounded-full overflow-hidden">
-                    <div className="bg-primary h-full" style={{ width: `${result.match_score}%` }}></div>
-                  </div>
-                </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
             </div>

@@ -34,6 +34,7 @@ export const API_CONFIG = {
     shortlist: "/shortlist",
     engage: "/engage",
     status: "/status",
+    assistantChat: "/api/agent/assistant/chat",
   },
 };
 

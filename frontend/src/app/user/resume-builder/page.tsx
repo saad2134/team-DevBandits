@@ -640,7 +640,7 @@ export default function ResumePage() {
         </Card>
       </div>
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="p-2 border-b bg-background flex justify-between items-center shrink-0">
+        <div className="p-2 border-b border-foreground/10 bg-background flex justify-between items-center shrink-0">
           <h3 className="font-semibold text-sm">Preview</h3>
           <Button size="sm" onClick={handleExport}>
             <Download size={14} className="mr-1" /> PDF

@@ -74,11 +74,6 @@ const appNavItems = [
       { title: "Saved", url: "/user/saved", icon: Bookmark },
       { title: "Applications", url: "/user/applications", icon: FileText },
       { title: "Explore", url: "/user/explore", icon: Compass },
-    ],
-  },
-  {
-    title: "Insights",
-    items: [
       { title: "Analytics", url: "/user/analytics", icon: BarChart2 },
     ],
   },
@@ -86,7 +81,8 @@ const appNavItems = [
     title: "Tools",
     items: [
       { title: "AI Assistant", url: "/user/assistant", icon: MessageSquare },
-      { title: "Resume", url: "/user/resume", icon: FileEdit },
+      { title: "Resume Analyzer", url: "/user/resume-analyzer", icon: FileText },
+      { title: "Resume Builder", url: "/user/resume-builder", icon: FileEdit },
     ],
   },
 ];
@@ -236,8 +232,8 @@ function UserSidebar({ children }: { children: React.ReactNode }) {
               {pathname === '/user/explore' && 'Discover all available opportunities'}
               {pathname === '/user/analytics' && 'Track your performance and insights'}
               {pathname === '/user/assistant' && 'AI-powered career assistant'}
-              {pathname === '/user/resume' && 'Build and analyze your resume'}
-              {pathname === '/user/profile' && 'Manage your personal information'}
+              {pathname === '/user/resume-analyzer' && 'Upload or paste resume for AI analysis'}
+              {pathname === '/user/resume-builder' && 'Build and export your resume'}
               {pathname === '/user/settings' && 'Configure your preferences'}
             </p>
           </div>
