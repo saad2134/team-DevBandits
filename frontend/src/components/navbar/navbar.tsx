@@ -67,6 +67,8 @@ export default function NavbarComponent({
     localStorage.removeItem("student_token");
     setIsLoggedIn(false);
     window.location.href = "/";
+  };
+
   const router = useRouter();
 
   const items = isLandingPage ? landingPageNavItems : navItems || [];
