@@ -21,54 +21,6 @@ interface AgentActivity {
   color: string;
 }
 
-const demoAgentActivity: AgentActivity[] = [
-  {
-    id: "scout",
-    name: "Scout Agent",
-    icon: <Search className="h-4 w-4" />,
-    status: "completed",
-    message: "Scanned 47 platforms for new opportunities",
-    timestamp: "2 min ago",
-    color: "text-blue-500",
-  },
-  {
-    id: "analyzer",
-    name: "Analyzer Agent",
-    icon: <Cpu className="h-4 w-4" />,
-    status: "completed",
-    message: "Processed 23 new raw opportunity listings",
-    timestamp: "1 min ago",
-    color: "text-purple-500",
-  },
-  {
-    id: "matcher",
-    name: "Matcher Agent",
-    icon: <BarChart3 className="h-4 w-4" />,
-    status: "running",
-    message: "Matching 18 opportunities to your profile...",
-    timestamp: "Just now",
-    color: "text-green-500",
-  },
-  {
-    id: "auditor",
-    name: "Auditor Agent",
-    icon: <Wand2 className="h-4 w-4" />,
-    status: "idle",
-    message: "Ready to analyze applications on demand",
-    timestamp: "Waiting",
-    color: "text-orange-500",
-  },
-  {
-    id: "learner",
-    name: "Learner Agent",
-    icon: <Brain className="h-4 w-4" />,
-    status: "running",
-    message: "Learning your preferences from 156 interactions",
-    timestamp: "Running",
-    color: "text-pink-500",
-  },
-];
-
 interface StudentProfile {
   id: number;
   name: string;
@@ -121,6 +73,13 @@ export default function DashboardPage() {
   });
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
+  const [agentActivity, setAgentActivity] = useState<AgentActivity[]>([
+    { id: "scout", name: "Scout Agent", icon: <Search className="h-4 w-4" />, status: "idle", message: "Loading...", timestamp: "", color: "text-blue-500" },
+    { id: "analyzer", name: "Analyzer Agent", icon: <Cpu className="h-4 w-4" />, status: "idle", message: "Loading...", timestamp: "", color: "text-purple-500" },
+    { id: "matcher", name: "Matcher Agent", icon: <BarChart3 className="h-4 w-4" />, status: "idle", message: "Loading...", timestamp: "", color: "text-green-500" },
+    { id: "auditor", name: "Auditor Agent", icon: <Wand2 className="h-4 w-4" />, status: "idle", message: "Loading...", timestamp: "", color: "text-orange-500" },
+    { id: "learner", name: "Learner Agent", icon: <Brain className="h-4 w-4" />, status: "idle", message: "Loading...", timestamp: "", color: "text-pink-500" },
+  ]);
 
   const triggerScout = async () => {
     setScanning(true);
@@ -190,6 +149,25 @@ export default function DashboardPage() {
         const today = new Date().toISOString().split('T')[0];
         const todayOpps = allOpps?.filter((o: any) => o.posted_at?.startsWith(today)) || [];
         setStats(prev => ({ ...prev, todayAdded: todayOpps.length }));
+        
+        // Fetch agent activity
+        try {
+          const agentRes = await fetch(`${API_URL}/api/agent-activity/${studentId}`);
+          if (agentRes.ok) {
+            const agentData = await agentRes.json();
+            
+            setAgentActivity([
+              { id: "scout", name: "Scout Agent", icon: <Search className="h-4 w-4" />, status: agentData.scout?.status || "idle", message: agentData.scout?.message || "", timestamp: agentData.scout?.timestamp || "", color: "text-blue-500" },
+              { id: "analyzer", name: "Analyzer Agent", icon: <Cpu className="h-4 w-4" />, status: agentData.analyzer?.status || "idle", message: agentData.analyzer?.message || "", timestamp: agentData.analyzer?.timestamp || "", color: "text-purple-500" },
+              { id: "matcher", name: "Matcher Agent", icon: <BarChart3 className="h-4 w-4" />, status: agentData.matcher?.status || "idle", message: agentData.matcher?.message || "", timestamp: agentData.matcher?.timestamp || "", color: "text-green-500" },
+              { id: "auditor", name: "Auditor Agent", icon: <Wand2 className="h-4 w-4" />, status: agentData.auditor?.status || "idle", message: agentData.auditor?.message || "", timestamp: agentData.auditor?.timestamp || "", color: "text-orange-500" },
+              { id: "learner", name: "Learner Agent", icon: <Brain className="h-4 w-4" />, status: agentData.learner?.status || "idle", message: agentData.learner?.message || "", timestamp: agentData.learner?.timestamp || "", color: "text-pink-500" },
+            ]);
+          }
+        } catch (e) {
+          console.error("Failed to fetch agent activity:", e);
+          // Keep default fallback state
+        }
         
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -350,7 +328,7 @@ export default function DashboardPage() {
             <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Live Agents</span>
           </div>
           <div className="space-y-2 flex-grow overflow-y-auto">
-            {demoAgentActivity.map((agent) => (
+            {agentActivity.map((agent) => (
               <div key={agent.id} className="flex items-start gap-2">
                 <div className={`${agent.color} mt-0.5`}>
                   {agent.icon}
@@ -363,7 +341,7 @@ export default function DashboardPage() {
                   agent.status === "running" ? "bg-green-500 animate-pulse" :
                   agent.status === "completed" ? "bg-green-500" :
                   agent.status === "error" ? "bg-red-500" :
-                  "bg-gray-400"
+                  "bg-green-400"
                 }`}></div>
               </div>
             ))}

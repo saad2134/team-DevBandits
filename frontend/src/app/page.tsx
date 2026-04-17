@@ -138,8 +138,9 @@ export default function HomePage() {
               transition: "transform 0.3s ease-out",
             }}
           >
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] animate-pulse" />
-            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-secondary/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: "1s" }} />
+            <div className="absolute top-1/3 left-1/4 w-64 h-64 bg-primary/30 rounded-full blur-[100px]" />
+            <div className="absolute top-1/2 right-1/4 w-48 h-48 bg-primary/20 rounded-full blur-[80px]" style={{ animationDelay: "0.5s" }} />
+            <div className="absolute bottom-1/3 left-1/2 -translate-x-1/2 w-56 h-56 bg-primary/25 rounded-full blur-[90px] animate-pulse" style={{ animationDelay: "1s" }} />
           </div>
 
           {/* Grid pattern overlay */}
@@ -351,8 +352,9 @@ export default function HomePage() {
         <section className="py-32 px-8 max-w-7xl mx-auto">
           <div className="bg-gradient-to-br from-primary to-secondary rounded-[2.5rem] p-12 md:p-24 text-center relative overflow-hidden group">
             {/* Abstract patterns */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/20 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2 group-hover:scale-150 transition-transform duration-700" style={{ animationDelay: "0.2s" }} />
+            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/30 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/30 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2 group-hover:scale-150 transition-transform duration-700" style={{ animationDelay: "0.2s" }} />
+            <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-white/10 rounded-full blur-[60px] group-hover:scale-150 transition-transform duration-700" style={{ animationDelay: "0.4s" }} />
 
             <div className="relative z-10 max-w-2xl mx-auto">
               <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-8 tracking-tight">Ready to navigate your future?</h2>

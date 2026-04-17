@@ -250,7 +250,7 @@ export default function AuditPage() {
                 <Button onClick={copyCoverLetter}>
                   {copied ? "Copied!" : "Copy to Clipboard"}
                 </Button>
-                <Button variant="outline" asChild onClick={async () => {
+                <Button onClick={async () => {
                   const studentId = localStorage.getItem("student_id");
                   if (studentId) {
                     try {
@@ -266,14 +266,9 @@ export default function AuditPage() {
                       console.error("Failed to track application:", e);
                     }
                   }
+                  window.open(auditData.opportunity.url, "_blank");
                 }}>
-                  <a
-                    href={auditData.opportunity.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Apply Now
-                  </a>
+                  Apply Now
                 </Button>
               </div>
             </CardContent>
