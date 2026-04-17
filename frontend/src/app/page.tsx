@@ -106,7 +106,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground" onMouseMove={handleMouseMove}>
-      <NavbarComponent />
+      <NavbarComponent isLandingPage={true} />
 
       <main className="pt-20">
         {/* Hero Section */}
@@ -240,7 +240,7 @@ export default function HomePage() {
         </section>
 
         {/* Feature Section */}
-        <section className="py-32 px-8 max-w-7xl mx-auto">
+        <section id="features" className="py-32 px-8 max-w-7xl mx-auto">
           <div className="mb-20">
             <span className="text-xs font-bold uppercase tracking-widest text-primary mb-4 block animate-in fade-in slide-in-from-left-4 duration-700">Precision Engineering</span>
             <h2 className="text-4xl md:text-5xl font-extrabold text-foreground leading-tight animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: "100ms" }}>
@@ -275,7 +275,7 @@ export default function HomePage() {
         </section>
 
         {/* How It Works Section */}
-        <section className="py-32 px-8 max-w-7xl mx-auto">
+        <section id="how-it-works" className="py-32 px-8 max-w-7xl mx-auto">
           <div className="mb-16">
             <span className="text-xs font-bold uppercase tracking-widest text-primary mb-4 block">How It Works</span>
             <h2 className="text-4xl md:text-5xl font-extrabold text-foreground leading-tight">Your Personal Career AI Team</h2>
