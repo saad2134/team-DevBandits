@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { API_URL } from "@/lib/utils";
 import { 
   Search, Clock, MapPin, Building, ExternalLink, Bookmark, BookmarkCheck,
-  Briefcase, GraduationCap
+  Briefcase, GraduationCap, Sparkles, Loader2
 } from "lucide-react";
 
 interface Opportunity {
@@ -32,6 +32,7 @@ export default function ExplorePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("All");
   const [loading, setLoading] = useState(true);
+  const [scoutLoading, setScoutLoading] = useState(false);
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [savedIds, setSavedIds] = useState<number[]>([]);
 
@@ -83,7 +84,7 @@ export default function ExplorePage() {
           setOpportunities(scoutData.opportunities.map((o: any, i: number) => ({
             id: o.id || (o.source === 'database' ? o.id : 200 + i),
             title: o.title || "Opportunity",
-            organization: o.title?.split(" at ")[1] || o.organization || "Company",
+            organization: analyzeData.organization || o.title?.split(" at ")[1] || o.organization || "Company",
             type: analyzeData.job_type || o.type || "Internship",
             url: o.link || o.url || "#",
             description: o.snippet || o.description || "",
@@ -135,6 +136,67 @@ export default function ExplorePage() {
     );
   };
 
+  const triggerScoutSearch = async () => {
+    setScoutLoading(true);
+    try {
+      const studentId = localStorage.getItem("student_id");
+      let keywords: string[] = [];
+      
+      if (studentId) {
+        try {
+          const profileRes = await fetch(`${API_URL}/profile/${studentId}`);
+          const profile = await profileRes.json();
+          keywords = [...(profile.skills || []), ...(profile.goals || [])];
+        } catch {
+          keywords = ["internship", "job", "scholarship"];
+        }
+      }
+      
+      // Use Scout Agent
+      const scoutRes = await fetch(`${API_URL}/api/agent/scout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          keywords: keywords.length > 0 ? keywords : ["internship", "job"],
+          search_type: "all"
+        })
+      });
+      const scoutData = await scoutRes.json();
+      
+      if (scoutData.opportunities && scoutData.opportunities.length > 0) {
+        // Parse with Analyzer Agent
+        const analyzeRes = await fetch(`${API_URL}/api/agent/analyzer`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            scout_results: scoutData.opportunities
+          })
+        });
+        const analyzeData = await analyzeRes.json();
+        
+        setOpportunities(scoutData.opportunities.map((o: any, i: number) => ({
+          id: o.id || (o.source === 'database' ? o.id : 200 + i),
+          title: o.title || "Opportunity",
+          organization: analyzeData.organization || o.title?.split(" at ")[1] || o.organization || "Company",
+          type: analyzeData.job_type || o.type || "Internship",
+          url: o.link || o.url || "#",
+          description: o.snippet || o.description || "",
+          requirements: analyzeData.skills || o.requirements || [],
+          location: analyzeData.location || o.location,
+          deadline: analyzeData.deadline || o.deadline,
+          source: o.source
+        })));
+        
+        alert(`Found ${scoutData.opportunities.length} opportunities! (Source: ${scoutData.source})`);
+      }
+    } catch (error) {
+      console.error("Scout search failed:", error);
+      alert("Failed to search. Please try again.");
+    } finally {
+      setScoutLoading(false);
+    }
+  };
+
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "internship": return <Briefcase className="w-4 h-4" />;
@@ -163,6 +225,18 @@ export default function ExplorePage() {
             className="pl-10"
           />
         </div>
+        <Button 
+          onClick={triggerScoutSearch} 
+          disabled={scoutLoading}
+          className="gap-2"
+        >
+          {scoutLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Sparkles className="w-4 h-4" />
+          )}
+          {scoutLoading ? "Searching..." : "Scout Agent Search"}
+        </Button>
       </div>
 
       <div className="flex flex-wrap gap-2">

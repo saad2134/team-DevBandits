@@ -5,6 +5,7 @@ from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from .db import get_db, init_db, SessionLocal
 from .models import Student, Opportunity, Engagement
@@ -20,6 +21,8 @@ app = FastAPI(
     title=app_config["name"],
     description=app_config["description"]
 )
+
+scheduler = AsyncIOScheduler()
 
 app.add_middleware(
     CORSMiddleware,
@@ -99,6 +102,212 @@ async def startup():
         db.add_all(sample_opportunities)
         db.commit()
     db.close()
+    
+    # Start background scheduler for continuous scanning and matching
+    scheduler.start()
+    scheduler.add_job(background_scout_scan, 'interval', hours=1, id="scout_scan")
+    scheduler.add_job(background_matcher, 'interval', hours=1, id="matcher")
+    print("\n✅ Background scheduler started (scout & matcher every 1 hour)")
+
+
+def background_scout_scan():
+    """Background task to continuously search for opportunities"""
+    print("\n🕐 [Background] Starting scheduled scout scan...")
+    db = SessionLocal()
+    try:
+        default_keywords = ["Software Engineering", "Data Science", "Machine Learning", "Web Development", "Cloud Computing"]
+        search_keywords = default_keywords
+        
+        FIRECRAWL_API_KEY = os.getenv("FIRECRAWL_API_KEY", "")
+        from app.config import SERP_API_KEY
+        
+        blocked_patterns = [
+            "unusual traffic", "our systems have detected", "robot or automated",
+            "captcha", "sorry index", "verify you're not a robot"
+        ]
+        
+        serp_urls = []
+        
+        # Step 1: Get URLs from SERP API
+        if SERP_API_KEY and not SERP_API_KEY.startswith("your_"):
+            print("   [Background] Using SERP API to find URLs...")
+            try:
+                import serpapi
+                
+                for keyword in search_keywords[:3]:
+                    search = serpapi.GoogleSearch({
+                        "q": f"{keyword} internship 2025",
+                        "num": 10,
+                        "api_key": SERP_API_KEY
+                    })
+                    response = search.get_dict()
+                    
+                    if "organic_results" in response:
+                        for r in response["organic_results"][:5]:
+                            link = r.get("link", "")
+                            if link:
+                                serp_urls.append({
+                                    "url": link,
+                                    "title": r.get("title", ""),
+                                    "snippet": r.get("snippet", "")
+                                })
+            except Exception as e:
+                print(f"   ⚠ SERP API error: {e}")
+        
+        results = []
+        
+        # Step 2: Scrape URLs with Firecrawl
+        if FIRECRAWL_API_KEY and not FIRECRAWL_API_KEY.startswith("your_") and serp_urls:
+            print("   [Background] Scraping URLs with Firecrawl...")
+            import requests
+            firecrawl_url = "https://api.firecrawl.dev/v2/scrape"
+            headers = {
+                "Authorization": f"Bearer {FIRECRAWL_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            
+            for item in serp_urls[:10]:
+                url = item.get("url", "")
+                if not url:
+                    continue
+                
+                try:
+                    payload = {"url": url, "formats": ["markdown"]}
+                    response = requests.post(firecrawl_url, json=payload, headers=headers, timeout=15)
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        if data.get("success") and "data" in data:
+                            content = data["data"].get("markdown", "").lower()
+                            
+                            # Skip if blocked
+                            if any(pattern in content for pattern in blocked_patterns):
+                                print(f"   ⚠ Blocked: {url[:40]}...")
+                                continue
+                            
+                            if len(content) < 100:
+                                continue
+                            
+                            raw_content = data["data"].get("markdown", "")
+                            lines = [l.strip() for l in raw_content.split("\n") if len(l.strip()) > 20]
+                            
+                            for line in lines[:3]:
+                                if any(w in line.lower() for w in ["intern", "student", "graduate", "fellowship", "entry", "junior", "2025", "hiring"]):
+                                    results.append({
+                                        "title": item.get("title", "") or line[:80],
+                                        "organization": "Not specified",
+                                        "type": "internship",
+                                        "url": url,
+                                        "description": line[:300],
+                                        "location": "Not specified",
+                                        "deadline": "Rolling"
+                                    })
+                                    break
+                except Exception as e:
+                    continue
+        
+# Fallback: Use SERP results directly if Firecrawl didn't work
+        if not results and serp_urls:
+            print("   [Background] Using SERP results directly...")
+            for item in serp_urls[:10]:
+                results.append({
+                    "title": item.get("title", ""),
+                    "organization": "Not specified",
+                    "type": "internship",
+                    "url": item.get("url", ""),
+                    "description": item.get("snippet", ""),
+                    "location": "Not specified",
+                    "deadline": "Rolling"
+                })
+        
+        # Emergency fallback: Only use database
+        if not results:
+            print("   [Background] Using database fallback...")
+            try:
+                db_opps = db.query(Opportunity).limit(10).all()
+                for opp in db_opps:
+                    results.append({
+                        "title": opp.title,
+                        "organization": opp.organization,
+                        "type": opp.type,
+                        "url": opp.url,
+                        "description": opp.description or "",
+                        "location": opp.location or "Not specified",
+                        "deadline": opp.deadline or "Rolling"
+                    })
+            except:
+                pass
+        
+        # Save new opportunities to database
+        saved_count = 0
+        for opp_data in results[:15]:
+            existing = db.query(Opportunity).filter(Opportunity.url == opp_data["url"]).first()
+            if not existing:
+                new_opp = Opportunity(
+                    title=opp_data["title"],
+                    organization=opp_data["organization"],
+                    type=opp_data["type"],
+                    url=opp_data["url"],
+                    description=opp_data.get("description", ""),
+                    deadline=opp_data.get("deadline", "Rolling"),
+                    location=opp_data.get("location", "Not specified")
+                )
+                db.add(new_opp)
+                saved_count += 1
+        
+        if saved_count > 0:
+            db.commit()
+            print(f"   ✅ Saved {saved_count} new opportunities to database")
+        
+    except Exception as e:
+        print(f"   ❌ Background scout error: {e}")
+    finally:
+        db.close()
+
+
+def background_matcher():
+    """Background task to continuously match opportunities to users"""
+    print("\n🕐 [Background] Starting scheduled matcher...")
+    db = SessionLocal()
+    try:
+        students = db.query(Student).filter(Student.onboarding_completed == True).all()
+        
+        for student in students:
+            student_skills = set(s.lower() for s in (student.skills or []))
+            student_target_roles = set((student.target_roles or []))
+            
+            all_opps = db.query(Opportunity).order_by(Opportunity.posted_at.desc()).limit(50).all()
+            
+            for opp in all_opps:
+                existing_engagement = db.query(Engagement).filter(
+                    Engagement.student_id == student.id,
+                    Engagement.opportunity_id == opp.id
+                ).first()
+                
+                if not existing_engagement:
+                    opp_text = f"{opp.title} {opp.description or ''} {' '.join(opp.requirements or [])}".lower()
+                    
+                    score = 0
+                    if student_skills:
+                        skills_match = sum(1 for s in student_skills if s in opp_text)
+                        score = min(100, skills_match * 25)
+                    
+                    if score >= 25:
+                        engagement = Engagement(
+                            student_id=student.id,
+                            opportunity_id=opp.id,
+                            action="matched",
+                            status="matched"
+                        )
+                        db.add(engagement)
+        
+        db.commit()
+        print(f"   ✅ Matched opportunities for {len(students)} students")
+        
+    except Exception as e:
+        print(f"   ❌ Background matcher error: {e}")
+    finally:
+        db.close()
 
 @app.get("/")
 def root():
@@ -232,20 +441,43 @@ def get_matches(student_id: int, db: Session = Depends(get_db)):
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     
-    opportunities = db.query(Opportunity).all()
+    # First, check for pre-matched opportunities from background matcher
+    matched_engagements = db.query(Engagement).filter(
+        Engagement.student_id == student_id,
+        Engagement.status == "matched"
+    ).all()
+    
+    opp_ids_matched = [e.opportunity_id for e in matched_engagements]
+    
     results = []
     
-    for opp in opportunities:
-        score, missing, matched = calculate_match_score(student, opp)
-        results.append(MatchResult(
-            opportunity=OpportunityOut.model_validate(opp),
-            match_score=round(score, 1),
-            missing_skills=missing,
-            matched_skills=matched
-        ))
+    # Add pre-matched opportunities first
+    for eng in matched_engagements:
+        opp = db.query(Opportunity).filter(Opportunity.id == eng.opportunity_id).first()
+        if opp:
+            score, missing, matched = calculate_match_score(student, opp)
+            results.append(MatchResult(
+                opportunity=OpportunityOut.model_validate(opp),
+                match_score=round(score, 1),
+                missing_skills=missing,
+                matched_skills=matched
+            ))
+    
+    # Calculate scores for remaining opportunities
+    all_opps = db.query(Opportunity).all()
+    for opp in all_opps:
+        if opp.id not in opp_ids_matched:
+            score, missing, matched = calculate_match_score(student, opp)
+            if score > 0:
+                results.append(MatchResult(
+                    opportunity=OpportunityOut.model_validate(opp),
+                    match_score=round(score, 1),
+                    missing_skills=missing,
+                    matched_skills=matched
+                ))
     
     results.sort(key=lambda x: x.match_score, reverse=True)
-    return results[:10]
+    return results[:15]
 
 @app.post("/audit", response_model=ResumeAuditResponse)
 def audit_resume(request: ResumeAuditRequest, db: Session = Depends(get_db)):
@@ -609,70 +841,240 @@ def get_analytics(student_id: int, db: Session = Depends(get_db)):
 
 @app.get("/api/agents-status")
 def get_agents_status():
-    """Check all agents status"""
+    """Check all agents status with API availability"""
+    from app.config import SERP_API_KEY, GEMINI_API_KEY
+    import os
+    FIRECRAWL_API_KEY = os.getenv("FIRECRAWL_API_KEY", "")
+    
     return {
-        "scout": {"status": "active", "name": "Scout", "role": "Opportunity Scout"},
+        "scout": {
+            "status": "active",
+            "name": "Scout",
+            "role": "Opportunity Scout",
+            "apis": {
+                "serpapi": {"configured": bool(SERP_API_KEY and not SERP_API_KEY.startswith("your_")), "key_present": bool(SERP_API_KEY)},
+                "firecrawl": {"configured": bool(FIRECRAWL_API_KEY and not FIRECRAWL_API_KEY.startswith("your_")), "key_present": bool(FIRECRAWL_API_KEY)}
+            }
+        },
         "analyzer": {"status": "active", "name": "Analyzer", "role": "Opportunity Analyzer"},
         "matcher": {"status": "active", "name": "Matcher", "role": "Matching Agent"},
-        "auditor": {"status": "active", "name": "Auditor", "role": "Application Audit Agent"},
+        "auditor": {
+            "status": "active",
+            "name": "Auditor",
+            "role": "Application Audit Agent",
+            "apis": {
+                "gemini": {"configured": bool(GEMINI_API_KEY and not GEMINI_API_KEY.startswith("your_")), "key_present": bool(GEMINI_API_KEY)}
+            }
+        },
         "learner": {"status": "active", "name": "Learner", "role": "Learning Agent"},
     }
 
 @app.post("/api/agent/scout")
 def scout_agent(data: dict, db: Session = Depends(get_db)):
-    """Scout discovers opportunities based on keywords"""
-    from app.config import SERP_API_KEY
+    """Scout discovers opportunities using SERP API to find URLs, then Firecrawl to scrape them"""
+    from app.config import SERP_API_KEY, GEMINI_API_KEY
+    import os
+    
+    FIRECRAWL_API_KEY = os.getenv("FIRECRAWL_API_KEY", "")
     
     keywords = data.get("keywords", [])
     search_type = data.get("search_type", "all")
     results = []
-    source = "database"
+    source = "none"
     
-    # Try Serp API if configured
+    print("\n" + "="*60)
+    print("🔍 SCOUT AGENT - Opportunity Discovery")
+    print("="*60)
+    print(f"Keywords: {keywords}")
+    print(f"Search Type: {search_type}")
+    
+    # Blocked content patterns to filter out
+    blocked_patterns = [
+        "unusual traffic", "our systems have detected", "robot or automated",
+        "captcha", "sorry index", "verify you're not a robot",
+        "access denied", "forbidden", "403 forbidden"
+    ]
+    
+    # === STEP 1: Use SERP API to discover URLs ===
+    serp_urls = []
     if SERP_API_KEY and not SERP_API_KEY.startswith("your_"):
+        print("\n[1/3] Using SERP API to find opportunity URLs...")
         try:
-            from google_search_results import GoogleSearchResults
-            api = GoogleSearchResults(api_key=SERP_API_KEY)
+            import serpapi
             
             for keyword in keywords[:3]:
-                query = {
-                    "engine": "google",
-                    "q": f"{keyword} {search_type} internship scholarship 2025",
-                    "num": 10
-                }
-                response = api.get_dict(query)
+                query = f"{keyword} {search_type} internship 2025"
+                search = serpapi.GoogleSearch({
+                    "q": query,
+                    "num": 10,
+                    "api_key": SERP_API_KEY
+                })
+                response = search.get_dict()
                 
                 if "organic_results" in response:
-                    source = "serp"
-                    for result in response["organic_results"][:5]:
-                        results.append({
-                            "title": result.get("title", ""),
-                            "link": result.get("link", ""),
-                            "snippet": result.get("snippet", ""),
-                            "source": "serp",
-                            "relevance_score": 90
-                        })
+                    for r in response["organic_results"][:5]:
+                        link = r.get("link", "")
+                        title = r.get("title", "")
+                        snippet = r.get("snippet", "")
+                        
+                        if link and "http" in link:
+                            serp_urls.append({
+                                "url": link,
+                                "title": title,
+                                "snippet": snippet
+                            })
+            
+            print(f"   ✓ SERP found {len(serp_urls)} URLs")
         except Exception as e:
-            print(f"Serp API error: {e}")
-            results = []
+            print(f"   ⚠ SERP API error: {e}")
+            serp_urls = []
+    else:
+        print("\n[1/3] SERP API not configured, using database fallback...")
     
-    # Fallback: Use database if no Serp results or error
+    # === STEP 2: Use Firecrawl to scrape discovered URLs ===
+    scraped_count = 0
+    if FIRECRAWL_API_KEY and not FIRECRAWL_API_KEY.startswith("your_") and serp_urls:
+        print("\n[2/3] Scraping URLs with Firecrawl...")
+        try:
+            import requests
+            firecrawl_url = "https://api.firecrawl.dev/v2/scrape"
+            headers = {
+                "Authorization": f"Bearer {FIRECRAWL_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            
+            for item in serp_urls[:10]:
+                url = item.get("url", "")
+                if not url:
+                    continue
+                
+                try:
+                    payload = {"url": url, "formats": ["markdown"]}
+                    response = requests.post(firecrawl_url, json=payload, headers=headers, timeout=15)
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        if data.get("success") and "data" in data:
+                            content = data["data"].get("markdown", "").lower()
+                            
+                            # Skip if blocked by anti-bot
+                            is_blocked = any(pattern in content for pattern in blocked_patterns)
+                            if is_blocked:
+                                print(f"   ⚠ Blocked: {url[:50]}...")
+                                continue
+                            
+                            # Skip if too little content
+                            if len(content) < 100:
+                                print(f"   ⚠ Empty/Too short: {url[:50]}...")
+                                continue
+                            
+                            # Extract opportunity info from content
+                            raw_content = data["data"].get("markdown", "")
+                            lines = [l.strip() for l in raw_content.split("\n") if len(l.strip()) > 20]
+                            
+                            for line in lines[:5]:
+                                # Look for internship/job related keywords
+                                if any(w in line.lower() for w in ["intern", "student", "graduate", "fellowship", "entry", "junior", "2025", "2026", "hiring", "opening"]):
+                                    results.append({
+                                        "title": item.get("title", "") or line[:80],
+                                        "link": url,
+                                        "snippet": line[:200],
+                                        "source": "firecrawl",
+                                        "relevance_score": 90
+                                    })
+                                    scraped_count += 1
+                                    break
+                except Exception as e:
+                    print(f"   ⚠ Scraping error: {e}")
+                    continue
+            
+            if results:
+                print(f"   ✓ Firecrawl scraped {scraped_count} opportunities")
+                source = "serp+firecrawl"
+        except Exception as e:
+            print(f"   ⚠ Firecrawl error: {e}")
+    
+    # === FALLBACK: Use SerpAPI results directly if Firecrawl didn't work ===
+    if not results and serp_urls:
+        print("\n[3/3] Using SERP results directly (Firecrawl failed)...")
+        for item in serp_urls[:10]:
+            results.append({
+                "title": item.get("title", ""),
+                "link": item.get("url", ""),
+                "snippet": item.get("snippet", ""),
+                "source": "serp",
+                "relevance_score": 85
+            })
+        if results:
+            source = "serp"
+            print(f"   ✓ Using {len(results)} SERP results")
+    
+    # === FINAL FALLBACK: Database ===
     if not results:
-        opportunities = db.query(Opportunity).all()
-        for opp in opportunities:
-            if any(k.lower() in opp.title.lower() or k.lower() in opp.description.lower() for k in keywords):
-                results.append({
-                    "id": opp.id,
-                    "title": opp.title,
-                    "organization": opp.organization,
-                    "type": opp.type,
-                    "url": opp.url,
-                    "source": "database",
-                    "relevance_score": 85 + (10 if search_type == opp.type else 0)
-                })
-        source = "database"
+        print("[4/4] Falling back to database...")
+        try:
+            opportunities = db.query(Opportunity).all()
+            for opp in opportunities:
+                if any(k.lower() in (opp.title.lower() or "") or k.lower() in (opp.description.lower() or "") for k in keywords):
+                    results.append({
+                        "id": opp.id,
+                        "title": opp.title,
+                        "organization": opp.organization,
+                        "type": opp.type,
+                        "url": opp.url,
+                        "source": "database",
+                        "relevance_score": 80
+                    })
+            source = "database"
+            print(f"   ✓ Database returned {len(results)} results")
+        except Exception as e:
+            print(f"   ⚠ Database error: {e}")
+    
+    # === EMERGENCY FALLBACK ===
+    if not results:
+        results = [
+            {"title": "Software Engineering Internship", "link": "https://example.com", "snippet": "Find opportunities in your area", "source": "fallback", "relevance_score": 70},
+            {"title": "Data Science Opportunity", "link": "https://example.com", "snippet": "Entry-level positions available", "source": "fallback", "relevance_score": 65},
+            {"title": "Web Development Internship", "link": "https://example.com", "snippet": "Join our team", "source": "fallback", "relevance_score": 60}
+        ]
+        source = "fallback"
+    
+    print(f"\n✅ Scout completed. Total results: {len(results)}, Source: {source}")
+    print("="*60 + "\n")
     
     return {"opportunities": results, "agent": "scout", "count": len(results), "source": source}
+
+
+# ==================== BACKGROUND CONTROLS ====================
+
+@app.post("/api/agent/scout/trigger")
+def trigger_scout_scan(db: Session = Depends(get_db)):
+    """Manually trigger a background scout scan"""
+    try:
+        background_scout_scan()
+        return {"status": "success", "message": "Scout scan completed"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/api/agent/matcher/trigger")
+def trigger_matcher(db: Session = Depends(get_db)):
+    """Manually trigger the matcher"""
+    try:
+        background_matcher()
+        return {"status": "success", "message": "Matcher completed"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.get("/api/agent/scheduler/status")
+def get_scheduler_status():
+    """Get background scheduler status"""
+    jobs = scheduler.get_jobs()
+    return {
+        "running": scheduler.running,
+        "jobs": [{"id": j.id, "next_run": str(j.next_run_time)} for j in jobs]
+    }
 
 @app.post("/api/agent/analyzer")
 def analyzer_agent(data: dict, db: Session = Depends(get_db)):
@@ -735,6 +1137,44 @@ def analyzer_agent(data: dict, db: Session = Depends(get_db)):
         job_type = "Contract"
     job_type = job_type or "Not specified"
     
+    # Extract organization from first result title if available
+    organization = "Not specified"
+    if scout_results and len(scout_results) > 0:
+        for result in scout_results[:3]:
+            first_title = result.get("title", "") or ""
+            snippet = result.get("snippet", "") or ""
+            combined = first_title + " " + snippet
+            
+            if " at " in first_title:
+                organization = first_title.split(" at ")[-1].strip()
+                break
+            
+            for sep in [" - ", " | ", " – ", " • "]:
+                if sep in first_title:
+                    organization = first_title.split(sep)[0].strip()
+                    break
+                elif sep in snippet:
+                    org_candidate = snippet.split(sep)[0].strip()
+                    if len(org_candidate) > 2 and len(org_candidate) < 50:
+                        organization = org_candidate
+                        break
+            if organization != "Not specified":
+                break
+    
+    if organization == "Not specified":
+        company_keywords = [
+            "Google", "Microsoft", "Amazon", "Meta", "Apple", "Netflix", "Adobe", "Salesforce",
+            "IBM", "Oracle", "Intel", "NVIDIA", "AMD", "Cisco", "Dell", "HP",
+            "TCS", "Infosys", "Wipro", "Accenture", "Cognizant", "Tech Mahindra",
+            "Flipkart", "Paytm", "OYO", "Swiggy", "Zomato", " cred",
+            "MongoDB", "Snowflake", "Databricks", "Elastic", "Cloudflare", "Twilio",
+            "Stripe", "Square", "PayPal", "Razorpay", "Coinbase", "Binance"
+        ]
+        for company in company_keywords:
+            if company.lower() in all_text.lower() and company.lower() not in ["at", "the", "and", "for"]:
+                organization = company
+                break
+    
     return {
         "skills": skills,
         "eligibility": eligibility,
@@ -742,6 +1182,7 @@ def analyzer_agent(data: dict, db: Session = Depends(get_db)):
         "stipend": stipend,
         "location": location,
         "job_type": job_type,
+        "organization": organization,
         "parsed_fields": {
             "skills_count": len(skills),
             "text_length": len(all_text),
@@ -886,6 +1327,10 @@ def auditor_cover_letter(data: dict, db: Session = Depends(get_db)):
     """Auditor generates AI cover letter using Gemini or fallback template"""
     from app.config import GEMINI_API_KEY
     
+    print("\n" + "="*60)
+    print("📝 COVER LETTER GENERATOR")
+    print("="*60)
+    
     student_id = data.get("student_id")
     opportunity_id = data.get("opportunity_id")
     use_ai = data.get("use_ai", True)
@@ -896,15 +1341,17 @@ def auditor_cover_letter(data: dict, db: Session = Depends(get_db)):
     if not student or not opp:
         raise HTTPException(status_code=404, detail="Student or opportunity not found")
     
+    print(f"Student: {student.name}, Opportunity: {opp.title}")
+    
     cover_letter = ""
     method = "template"
     
     # Try Gemini if key is configured and use_ai is True
     if use_ai and GEMINI_API_KEY and not GEMINI_API_KEY.startswith("your_"):
+        print("[1/2] Trying Gemini API...")
         try:
-            import google.generativeai as genai
-            genai.configure(api_key=GEMINI_API_KEY)
-            model = genai.GenerativeModel('gemini-pro')
+            import google.genai as genai
+            client = genai.Client(api_key=GEMINI_API_KEY)
             
             prompt = f"""Write a professional cover letter for the following:
 
@@ -921,15 +1368,20 @@ Candidate Profile:
 
 Write a concise, professional cover letter highlighting how their skills match the job requirements. Keep it under 300 words."""
             
-            response = model.generate_content(prompt)
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
             cover_letter = response.text
             method = "gemini"
+            print("   ✓ Gemini cover letter generated")
         except Exception as e:
-            print(f"Gemini API error: {e}")
+            print(f"   ✗ Gemini error: {e}")
             cover_letter = ""
     
     # Fallback to template if Gemini failed or not used
     if not cover_letter:
+        print("[2/2] Using template-based cover letter")
         method = "template"
         # Get matched skills
         matched_skills = []
@@ -951,6 +1403,9 @@ I would welcome the opportunity to discuss how I can contribute to your team's s
 Sincerely,
 {student.name}"""
     
+    print(f"✅ Cover letter generated. Method: {method}")
+    print("="*60 + "\n")
+    
     return {
         "cover_letter": cover_letter, 
         "method": method,
@@ -958,6 +1413,129 @@ Sincerely,
         "position": opp.title,
         "company": opp.organization,
         "matched_skills": matched_skills if 'matched_skills' in dir() else [],
+        "agent": "auditor"
+    }
+
+@app.post("/api/agent/auditor/resume-analyzer")
+def resume_analyzer(data: dict, db: Session = Depends(get_db)):
+    """Analyze uploaded resume text using Gemini or fallback rules"""
+    from app.config import GEMINI_API_KEY
+    
+    print("\n" + "="*60)
+    print("📄 RESUME ANALYZER")
+    print("="*60)
+    
+    resume_text = data.get("resume_text", "")
+    student_id = data.get("student_id")
+    
+    if not resume_text:
+        raise HTTPException(status_code=400, detail="Resume text is required")
+    
+    print(f"Resume text length: {len(resume_text)} chars")
+    
+    analysis = {}
+    method = "fallback"
+    
+    # Try Gemini if key is configured
+    if GEMINI_API_KEY and not GEMINI_API_KEY.startswith("your_"):
+        print("[1/2] Trying Gemini API...")
+        try:
+            import google.genai as genai
+            client = genai.Client(api_key=GEMINI_API_KEY)
+            
+            prompt = f"""Analyze this resume and provide:
+1. Extracted skills (list)
+2. Experience level (Entry/Mid/Senior)
+3. Missing key sections (list)
+4. ATS score estimate (0-100)
+5. Improvement suggestions (list)
+
+Resume:
+{resume_text[:2000]}
+
+Respond in JSON format with keys: skills, experience_level, missing_sections, ats_score, suggestions"""
+
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
+            
+            import json
+            try:
+                analysis = json.loads(response.text)
+                method = "gemini"
+                print("   ✓ Gemini analysis complete")
+            except:
+                analysis = {"error": "Could not parse Gemini response", "raw": response.text[:500]}
+                method = "fallback"
+        except Exception as e:
+            print(f"   ✗ Gemini error: {e}")
+            analysis = {}
+    
+    # Fallback to rule-based analysis
+    if not analysis or "error" in analysis:
+        print("[2/2] Using fallback analysis")
+        method = "fallback"
+        
+        text_lower = resume_text.lower()
+        
+        # Extract skills
+        common_skills = ["python", "javascript", "java", "c++", "react", "angular", "vue", "node", "sql", 
+                        "mongodb", "mysql", "postgresql", "docker", "kubernetes", "aws", "azure", "git",
+                        "html", "css", "typescript", "flask", "django", "fastapi", "tensorflow", "pytorch",
+                        "machine learning", "data science", "analytics", "excel", "powerpoint", "word"]
+        
+        found_skills = [s for s in common_skills if s in text_lower]
+        
+        # Detect experience level
+        exp_keywords = ["senior", "lead", "manager", "principal", "architect"]
+        mid_keywords = ["junior", "intern", "trainee", "associate"]
+        
+        if any(k in text_lower for k in exp_keywords):
+            exp_level = "Senior"
+        elif any(k in text_lower for k in mid_keywords):
+            exp_level = "Entry"
+        else:
+            exp_level = "Mid"
+        
+        # Missing sections
+        missing = []
+        if "education" not in text_lower and "university" not in text_lower:
+            missing.append("Education")
+        if "project" not in text_lower:
+            missing.append("Projects")
+        if "skill" not in text_lower and len(found_skills) < 3:
+            missing.append("Skills Section")
+        
+        # Simple ATS score
+        ats_score = 50 + (len(found_skills) * 5) + (20 if "project" in text_lower else 0) + (15 if "education" in text_lower else 0)
+        ats_score = min(ats_score, 100)
+        
+        # Suggestions
+        suggestions = [
+            "Add a professional summary",
+            "Quantify achievements with numbers",
+            "Include relevant keywords from job descriptions",
+            "Ensure consistent formatting"
+        ]
+        if len(found_skills) < 5:
+            suggestions.append("Add more technical skills")
+        
+        analysis = {
+            "skills": found_skills[:10],
+            "experience_level": exp_level,
+            "missing_sections": missing,
+            "ats_score": ats_score,
+            "suggestions": suggestions[:5]
+        }
+    
+    print(f"✅ Analysis complete. Method: {method}")
+    print("="*60 + "\n")
+    
+    return {
+        "analysis": analysis,
+        "method": method,
+        "student_id": student_id,
         "agent": "auditor"
     }
 
@@ -1097,6 +1675,199 @@ def update_education_details(student_id: int, education: List[Dict[str, Any]], d
     student.education_details = education
     db.commit()
     return {"success": True, "message": "Education details updated"}
+
+@app.post("/api/agent/assistant/chat")
+def assistant_chat(data: dict, db: Session = Depends(get_db)):
+    """AI Assistant - Chat with Gemini API with fallback"""
+    from app.config import GEMINI_API_KEY
+    
+    print("\n" + "="*60)
+    print("🧠 AI ASSISTANT - Chat Request")
+    print("="*60)
+    
+    user_message = data.get("message", "")
+    student_id = data.get("student_id")
+    context = data.get("context", {})
+    
+    if not user_message:
+        raise HTTPException(status_code=400, detail="Message is required")
+    
+    print(f"User: {user_message}")
+    print(f"Student ID: {student_id}")
+    
+    # Get student profile for context if available
+    student_context = ""
+    if student_id:
+        student = db.query(Student).filter(Student.id == student_id).first()
+        if student:
+            student_context = f"""
+Student Profile:
+- Name: {student.name}
+- Branch: {student.branch}
+- Year: {student.year}
+- Skills: {", ".join(student.skills) if student.skills else "Not specified"}
+- CGPA: {student.cgpa if student.cgpa else "Not specified"}
+- Institution: {student.institution or "Not specified"}
+"""
+            print(f"Context loaded for student: {student.name}")
+    
+    response_text = ""
+    method = "fallback"
+    
+    # === METHOD 1: Try Gemini API ===
+    print(f"   GEMINI_API_KEY loaded: {'Yes' if GEMINI_API_KEY else 'No'} (value: {GEMINI_API_KEY[:20] if GEMINI_API_KEY else 'empty'}...)")
+    if GEMINI_API_KEY and not GEMINI_API_KEY.startswith("your_") and not GEMINI_API_KEY.startswith("GEMINI_API_KEY"):
+        print("[1/2] Trying Gemini API...")
+        try:
+            import google.genai as genai
+            client = genai.Client(api_key=GEMINI_API_KEY)
+            
+            prompt = f"""You are CareerCompass AI Assistant, a helpful career guidance assistant for students.
+You help with:
+- Finding job/internship opportunities
+- Resume tips and improvements
+- Interview preparation
+- Career advice and planning
+
+{student_context}
+
+User Question: {user_message}
+
+Provide helpful, concise guidance. Use bullet points when helpful. Keep responses under 200 words."""
+            
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
+            response_text = response.text
+            method = "gemini"
+            print("   ✓ Gemini response generated")
+        except Exception as e:
+            print(f"   ✗ Gemini error: {e}")
+            response_text = ""
+    
+    # === METHOD 2: Fallback to rule-based responses ===
+    if not response_text:
+        print("[2/2] Using fallback responses...")
+        method = "fallback"
+        response_text = _generate_fallback_response(user_message, context)
+    
+    print(f"Response method: {method}")
+    print("="*60 + "\n")
+    
+    return {
+        "response": response_text,
+        "method": method,
+        "agent": "assistant"
+    }
+
+def _generate_fallback_response(user_input: str, context: dict) -> str:
+    """Generate rule-based response when Gemini is unavailable"""
+    input_lower = user_input.lower()
+    
+    if "opportunit" in input_lower or "job" in input_lower or "internship" in input_lower or "find" in input_lower:
+        return """I can help you find opportunities! Here are some tips:
+
+**1. Update Your Profile**: Make sure your skills and goals are current on your dashboard.
+
+**2. Check Daily Brief**: Visit your dashboard to see personalized matches.
+
+**3. Use Filters**: Apply filters like location, type, and deadline on the Explore page.
+
+**4. Set Alerts**: Enable notifications to get notified of new opportunities.
+
+Would you like me to help you with something specific?"""
+
+    if "resume" in input_lower or "cv" in input_lower:
+        return """Here are some resume tips:
+
+**1. Keep it Concise**: 1-2 pages maximum.
+
+**2. Quantify Achievements**: Use numbers (e.g., "Increased efficiency by 25%").
+
+**3. Tailor for Each Job**: Match keywords from job descriptions.
+
+**4. Highlight Skills**: List relevant technical and soft skills.
+
+**5. Include Projects**: Show practical application of your skills.
+
+Would you like to use our Resume Builder?"""
+
+    if "interview" in input_lower or "prep" in input_lower:
+        return """Interview preparation tips:
+
+**Before Interview:**
+• Research the company thoroughly
+• Practice common questions
+• Prepare your own questions
+
+**Common Questions:**
+• "Tell me about yourself"
+• "Why do you want to work here?"
+• "What are your strengths/weaknesses?"
+
+**During:**
+• Be confident and make eye contact
+• Listen carefully
+• Follow the STAR method for behavioral questions
+
+Would you like practice questions?"""
+
+    if "career" in input_lower or "advice" in input_lower or "guidance" in input_lower:
+        return """Career guidance framework:
+
+**1. Self-Assessment**
+• Identify your strengths
+• Determine your interests
+
+**2. Goal Setting**
+• Short-term (3-6 months)
+• Long-term (1-5 years)
+
+**3. Skill Building**
+• Technical skills for your field
+• Soft skills (communication, teamwork)
+
+**4. Networking**
+• Connect with professionals
+• Use LinkedIn actively
+
+**5. Keep Learning**
+• Stay updated in your field
+
+What's your target role? I can help you plan!"""
+
+    if "skill" in input_lower or "learn" in input_lower:
+        return """Popular skills to learn in 2025:
+
+**Technical:**
+• Python & Data Science
+• JavaScript & React
+• Cloud (AWS/Azure)
+• AI/ML Basics
+
+**Soft Skills:**
+• Communication
+• Problem Solving
+• Project Management
+
+**Tips:**
+• Focus on one area at a time
+• Build projects to practice
+• Join online communities
+• Take online courses
+
+Would you like specific recommendations for your field?"""
+
+    return """I'm here to help! You can ask me about:
+
+• **Finding opportunities** - Jobs, internships, scholarships
+• **Resume help** - Tips and building
+• **Interview prep** - Preparation strategies
+• **Career advice** - Planning your path
+• **Skills development** - What to learn
+
+Just type your question or use one of the quick actions!"""
 
 if __name__ == "__main__":
     import uvicorn

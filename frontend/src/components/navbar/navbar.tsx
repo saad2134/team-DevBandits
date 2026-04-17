@@ -2,12 +2,13 @@
 
 import { siteConfig } from "@/config/site";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import Image from "next/image";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,6 +54,28 @@ export default function NavbarComponent({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
   const { setTheme, theme } = useTheme();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("student_token");
+    const id = localStorage.getItem("student_id");
+    setIsLoggedIn(!!token && !!id);
+    
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("student_id");
+    localStorage.removeItem("student_token");
+    setIsLoggedIn(false);
+    window.location.href = "/";
+  };
+
   const router = useRouter();
 
   const items = isLandingPage ? landingPageNavItems : isExternalPage ? externalPageNavItems : navItems || [];
@@ -90,12 +113,25 @@ export default function NavbarComponent({
         </div>
 
         <div className="flex items-center gap-4">
-          <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Sign In
-          </Link>
-          <Link href="/signup" className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors">
-            Get Started
-          </Link>
+          {isLoading ? (
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-8 w-16" />
+              <Skeleton className="h-8 w-24" />
+            </div>
+          ) : isLoggedIn ? (
+            <Link href="/user/dashboard" className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors">
+              Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                Sign In
+              </Link>
+              <Link href="/signup" className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors">
+                Get Started
+              </Link>
+            </>
+          )}
           {showModeToggle && (
             <DropdownMenu open={isThemeDropdownOpen} onOpenChange={setIsThemeDropdownOpen}>
               <DropdownMenuTrigger asChild>
@@ -139,20 +175,37 @@ export default function NavbarComponent({
               </button>
             ))}
             <div className="flex w-full flex-col gap-4 mt-4">
-              <Link
-                href="/login"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-center text-sm font-medium text-muted-foreground hover:text-foreground"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/signup"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-center px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold"
-              >
-                Get Started
-              </Link>
+              {isLoading ? (
+                <div className="flex flex-col gap-4">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ) : isLoggedIn ? (
+                <Link
+                  href="/user/dashboard"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-center px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold"
+                >
+                  Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-center text-sm font-medium text-muted-foreground hover:text-foreground"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/signup"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-center px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
               {showModeToggle && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

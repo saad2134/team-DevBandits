@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { API_CONFIG } from "@/config/site";
 import { 
   Send, 
   Sparkles, 
@@ -158,7 +159,31 @@ export default function AIAssistantPage() {
     setInput("");
     setIsTyping(true);
 
-    setTimeout(() => {
+    try {
+      const response = await fetch(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.assistantChat}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: messageText,
+          student_id: null
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const assistantMessage: Message = {
+          id: messages.length + 1,
+          role: "assistant",
+          content: data.response,
+          timestamp: new Date(),
+          suggestions: ["Find opportunities", "Resume tips", "Interview prep", "Career advice"]
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+      } else {
+        throw new Error("API error");
+      }
+    } catch (error) {
+      console.error("Assistant API error, using fallback:", error);
       const response = generateResponse(messageText);
       const assistantMessage: Message = {
         id: messages.length + 1,
@@ -168,8 +193,9 @@ export default function AIAssistantPage() {
         suggestions: response.suggestions
       };
       setMessages(prev => [...prev, assistantMessage]);
+    } finally {
       setIsTyping(false);
-    }, 800);
+    }
   };
 
   const handleCopy = (content: string, id: number) => {
