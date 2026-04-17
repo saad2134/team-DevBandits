@@ -87,9 +87,9 @@ export default function FooterSection({
     {
       appName: "Legal",
       links: [
-        { text: "Privacy Policy", href: "/privacy-policy" },
-        { text: "Terms of Service", href: "/terms-of-service" },
-        { text: "Cookie Policy", href: "/cookie-policy" },
+        { text: "Privacy Policy", href: "/policy" },
+        { text: "Terms of Service", href: "/terms" },
+        { text: "Cookie Policy", href: "/cookies" },
       ],
     },
   ],
